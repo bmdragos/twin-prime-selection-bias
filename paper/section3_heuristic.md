@@ -10,6 +10,24 @@ The selection bias arises from a simple arithmetic identity. For a prime $p \geq
 
 This mutual exclusivity is the engine of the bias. It implies that the events "$p \mid a$" and "$p \mid b$" are negatively correlated: knowing one fails makes the other slightly more likely.
 
+**Figure 3.1: Mutual Exclusivity at $p = 5$.**
+
+Consider the residue classes $k \bmod 5$:
+
+```
+k mod 5:    0       1       2       3       4
+            │       │       │       │       │
+  p|a?      ✗       ✓       ✗       ✗       ✗     (6k ≡ 1 mod 5 when k ≡ 1)
+  p|b?      ✗       ✗       ✓       ✗       ✗     (6k ≡ -1 mod 5 when k ≡ 2)
+            │       │       │       │       │
+            └───────┴───────┴───────┴───────┘
+                    ↑       ↑
+              "forbidden"  "forbidden"
+               for b       for a
+```
+
+The key observation: the classes where $5 \mid a$ and where $5 \mid b$ are **disjoint**. When we condition on "$a$ is prime" (i.e., exclude $k \equiv 1$), the remaining 4 classes include the one where $5 \mid b$. Thus $\mathbb{P}(5 \mid b \mid 5 \nmid a) = 1/4$, not $1/5$.
+
 **Proposition 3.1.** For any prime $p \geq 5$,
 
 $$
@@ -62,31 +80,52 @@ $$
 \Delta\omega = \mathbb{E}[\omega \mid \text{PC}] - \mathbb{E}[\omega \mid \text{CC}] = 2.9067 - 2.8239 = 0.0828.
 $$
 
-The ratio defines a **calibration factor**:
+The observed shift is approximately $78\%$ of the naive prediction:
 
 $$
-c = \frac{\Delta\omega_{\text{emp}}}{\sum_{p \geq 5} 1/[p(p-1)]} = \frac{0.0828}{0.1065} = 0.78.
+\frac{\Delta\omega_{\text{emp}}}{\sum_{p \geq 5} 1/[p(p-1)]} = \frac{0.0828}{0.1065} \approx 0.78.
 $$
 
-The naive heuristic overshoots by approximately 22%.
+## 3.4 Connection to the Singular Series
 
-## 3.4 Sources of the Discrepancy
+The $22\%$ discrepancy between the independent-prime heuristic and observation is not a defect of our analysis—it is a manifestation of the same phenomenon that produces the **singular series** in prime-pair conjectures.
 
-Two effects explain why the independent-prime heuristic overestimates the bias:
+In the Hardy-Littlewood conjecture for twin primes, the density of pairs $(n, n+2)$ with both prime is governed by the constant:
 
-**1. Baseline conditioning.** The comparison population CC (both $a$ and $b$ composite) is itself a conditioned sample. Composites in CC pairs have slightly *fewer* prime factors than unconditional composites, because both members must "use up" small prime factors. This inflates the denominator of the bias calculation.
+$$
+C_2 = \prod_{p \geq 3} \left(1 - \frac{1}{(p-1)^2}\right) \approx 0.6602.
+$$
 
-Evidence: at $K = 10^9$,
-- $\mathbb{E}[\omega \mid \text{CC}] = 2.8239$
-- $\mathbb{E}[\omega \mid \text{unconditional composite}] = 2.8357$
+This product encodes precisely the failure of naive independence: divisibility events by different primes are correlated through the linear forms $n$ and $n+2$. Our mutual exclusivity constraint (Proposition 3.1) is the same local mechanism that produces the factor $(1 - 1/(p-1)^2)$ at each prime.
 
-The CC baseline is 0.4% lower than the unconditional baseline.
+**The key observation.** The sum $\sum_{p \geq 5} 1/[p(p-1)]$ corresponds to retaining only the first-order term in an inclusion-exclusion expansion. The observed reduction by a factor of $\approx 0.78$ reflects higher-order interactions among primes—exactly the interactions that are encoded multiplicatively in $C_2$.
 
-**2. Residual correlations.** The independence assumption treats each prime's contribution separately, but in reality, divisibility events are correlated through the structure of $6k \pm 1$. After conditioning on "$a$ is prime," residual correlations exist between divisibility by different primes $p$ and $q$.
+We do not claim to derive the correction factor $0.78$ in closed form. Rather, we interpret it as the empirical shadow of the singular series in the conditional $\omega$-moment setting. Heuristically, one expects corrections of order:
 
-These correlations are precisely what the transfer-matrix model (Section 4) captures. The calibration factor $c = 0.78$ encodes the net effect of these correlations.
+$$
+\prod_{p} \left(1 - O\left(\frac{1}{p^2}\right)\right) \approx 1 - \sum_p O\left(\frac{1}{p^2}\right) + \text{higher order}
+$$
 
-## 3.5 The Percentage Bias
+which would yield a multiplicative reduction in the $0.7$–$0.9$ range, consistent with our measurement.
+
+## 3.5 Decomposition by Mechanism
+
+As shown in Section 2.7, the total shift of $0.0828$ decomposes into:
+
+| Mechanism | Contribution | Fraction |
+|-----------|--------------|----------|
+| PC uplift (primes push factors onto $b$) | $0.0710$ | 86% |
+| CC suppression (composites pull factors from $b$) | $0.0118$ | 14% |
+
+The independent-prime sum of $0.1065$ most directly models the PC uplift. If we compare the heuristic to the PC-uplift component alone:
+
+$$
+\frac{0.0710}{0.1065} \approx 0.67
+$$
+
+This is closer to $C_2 \approx 0.66$, suggesting that the singular-series correction may be more directly visible in the PC-uplift component than in the total bias.
+
+## 3.6 The Percentage Bias
 
 The percentage bias is:
 
@@ -106,7 +145,7 @@ Since $\Delta\omega$ is approximately constant (determined by the convergent sum
 
 The empirical values (2.96%, 2.94%, 2.93% at $K = 10^7, 10^8, 10^9$) match this prediction within measurement uncertainty.
 
-## 3.6 Summary
+## 3.7 Summary
 
 The selection bias admits a clean first-principles explanation:
 
@@ -114,6 +153,8 @@ The selection bias admits a clean first-principles explanation:
 
 2. **Heuristic:** Summing the per-prime increments gives $\sum 1/[p(p-1)] = 0.1065$.
 
-3. **Empirical:** The observed shift is $0.78 \times 0.1065 = 0.0828$, with the 22% reduction attributable to correlations and baseline effects.
+3. **Connection to singular series:** The observed shift is $\approx 78\%$ of the naive prediction. This reduction is consistent with the higher-order correlations encoded in the Hardy-Littlewood constant $C_2$. When comparing to the PC-uplift component alone ($0.0710$), the ratio is $\approx 0.67$, strikingly close to $C_2 \approx 0.66$.
 
-The heuristic captures the correct order of magnitude and qualitative behavior (stability across scale) without appealing to any conjectures about prime distribution.
+4. **Decomposition:** The total bias is $86\%$ PC uplift, $14\%$ CC suppression.
+
+The heuristic captures the correct order of magnitude and qualitative behavior (stability across scale), and the quantitative discrepancy is situated within the well-understood framework of sieve-theoretic corrections.

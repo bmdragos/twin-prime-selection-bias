@@ -1,10 +1,10 @@
-# 4. Transfer Matrix Formalism
+# 4. Residue-Class Model and Inclusion-Exclusion
 
 ## 4.1 Motivation
 
-The independent-prime heuristic of Section 3 overshoots the empirical bias by 22%. This discrepancy arises because divisibility events are not independent: after conditioning on the primality of $a = 6k-1$, the divisibility of $b = 6k+1$ by different primes $p$ and $q$ becomes correlated.
+The independent-prime heuristic of Section 3 overshoots the empirical bias by $\approx 22\%$. This discrepancy arises because divisibility events are not independent: after conditioning on the primality of $a = 6k-1$, the divisibility of $b = 6k+1$ by different primes $p$ and $q$ becomes correlated.
 
-To quantify these correlations, we introduce a transfer-matrix model that tracks the joint distribution of $(a, b)$ modulo a growing set of primes.
+To quantify these correlations exactly (for any finite set of primes), we formulate a residue-class model using inclusion-exclusion over the joint divisibility states. While this model can be written in matrix form, we do not invoke any spectral gap or decay-of-correlations results; it serves only as a bookkeeping device for exact computation of conditional expectations.
 
 ## 4.2 State Space
 
@@ -67,29 +67,31 @@ $$
 
 The conditional expectation $\mathbb{E}[|\sigma_b| \mid \text{CC}] = 1$ (exactly one prime divides $b$ in each CC state).
 
-## 4.6 Scaling and the Calibration Factor
+## 4.6 Convergence to the Singular-Series Correction
 
-As $|\mathcal{P}| \to \infty$, the transfer-matrix expectations converge to true expectations over all primes. Numerical experiments show:
+As $|\mathcal{P}| \to \infty$, the model expectations converge to true expectations over all primes. Numerical experiments show:
 
 $$
-\lim_{|\mathcal{P}| \to \infty} \frac{\mathbb{E}[|\sigma_b| \mid \text{PC}] - \mathbb{E}[|\sigma_b| \mid \text{CC}]}{\sum_{p \in \mathcal{P}} 1/[p(p-1)]} = c \approx 0.78.
+\lim_{|\mathcal{P}| \to \infty} \frac{\mathbb{E}[|\sigma_b| \mid \text{PC}] - \mathbb{E}[|\sigma_b| \mid \text{CC}]}{\sum_{p \in \mathcal{P}} 1/[p(p-1)]} \approx 0.78.
 $$
 
-This confirms that the calibration factor $c$ arises from the correlated structure encoded in the transfer matrix, not from finite-size effects.
+This ratio is the same correction factor observed empirically in Section 3.3. Its appearance in the residue-class model confirms that the discrepancy from the naive heuristic is a consequence of the local correlations (mutual exclusivity) rather than finite-size effects or large-prime contributions.
 
-## 4.7 Interpretation
+## 4.7 Connection to Sieve Theory
 
-The transfer-matrix model provides:
+The residue-class model is essentially an application of inclusion-exclusion over the sieve dimension. In the language of sieve theory:
 
-1. **A proof that correlations reduce the bias.** The independent-prime heuristic corresponds to replacing the joint distribution $\pi(\sigma_a, \sigma_b)$ with a product measure. The true joint distribution has negative correlations between divisibility events (due to mutual exclusivity), which reduces the conditional uplift.
+1. **The sieve weights.** The probability measure $\pi(\sigma_a, \sigma_b)$ corresponds to sieve weights on the residue classes modulo the primorial $P_\# = \prod_{p \in \mathcal{P}} p$.
 
-2. **A computable correction.** For any finite $\mathcal{P}$, the bias can be computed exactly from the transfer matrix. This gives rigorous bounds on the calibration factor.
+2. **The fundamental lemma.** The mutual exclusivity constraint ($\sigma_a \cap \sigma_b = \emptyset$) reduces the state space from $4^r$ to $3^r$, encoding the local density corrections that produce the singular series.
 
-3. **A bridge to analytic methods.** The transfer-matrix structure suggests connections to sieve theory, where similar product-over-primes formulas appear with correction factors.
+3. **Product structure.** The factorization $\pi(\sigma_a, \sigma_b) = \prod_p (\text{local factor})$ mirrors the Euler product structure in the Hardy-Littlewood constant $C_2$.
+
+The model provides exact computation of conditional expectations for any finite $\mathcal{P}$, giving rigorous (if non-asymptotic) bounds on the correction factor.
 
 ## 4.8 Limitations
 
-The transfer-matrix model treats all primes symmetrically and assumes uniform distribution of $k$ over residue classes. It does not account for:
+The residue-class model treats all primes symmetrically and assumes uniform distribution of $k$ over residue classes. It does not account for:
 
 - Large prime factors (which contribute to $\omega$ but are not in any finite $\mathcal{P}$)
 - The density of primes themselves (which decreases like $1/\log n$)

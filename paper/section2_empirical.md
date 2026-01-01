@@ -118,7 +118,36 @@ $$
 
 The observed unconditional mean is $2.8357$, matching to four decimal places. This confirms that our conditional means are mutually consistent and that no systematic errors have been introduced.
 
-## 2.7 Summary
+## 2.7 Decomposition of the Bias
+
+The total bias of $2.93\%$ (PC vs CC) conflates two distinct mechanisms. We can decompose it using the unconditional composite mean as an intermediate baseline.
+
+Let:
+- $\mu_{\text{PC}} = \mathbb{E}[\omega(b) \mid \text{PC}] = 2.9067$
+- $\mu_{\text{CC}} = \mathbb{E}[\omega(b) \mid \text{CC}] = 2.8239$
+- $\mu_{\text{uncond}} = \mathbb{E}[\omega(b) \mid b \text{ composite}] = 2.8357$
+
+Then the total shift decomposes as:
+
+$$
+\mu_{\text{PC}} - \mu_{\text{CC}} = \underbrace{(\mu_{\text{PC}} - \mu_{\text{uncond}})}_{\text{PC uplift}} + \underbrace{(\mu_{\text{uncond}} - \mu_{\text{CC}})}_{\text{CC suppression}}
+$$
+
+Numerically at $K = 10^9$:
+
+| Component | Value | Fraction of total |
+|-----------|-------|-------------------|
+| PC uplift | $2.9067 - 2.8357 = 0.0710$ | 86% |
+| CC suppression | $2.8357 - 2.8239 = 0.0118$ | 14% |
+| **Total** | $0.0828$ | 100% |
+
+**Interpretation.** The dominant effect ($86\%$) is the *PC uplift*: conditioning on $a$ being prime pushes small prime factors onto $b$, increasing $\omega(b)$.
+
+The secondary effect ($14\%$) is the *CC suppression*: conditioning on $a$ being composite means $a$ likely has small prime factors, which—by the same mutual exclusivity—slightly *reduces* the probability that $b$ has those factors. Thus $\mu_{\text{CC}} < \mu_{\text{uncond}}$.
+
+This decomposition clarifies that the CC baseline is not a neutral reference population. The "selection bias" is primarily a property of the PC population, with a smaller contribution from the CC population being itself depleted.
+
+## 2.8 Summary
 
 The empirical facts are:
 
@@ -128,6 +157,8 @@ The empirical facts are:
 
 3. **Multiple baselines confirm it.** The effect holds whether comparing to CC composites ($+2.93\%$) or to unconditional composites ($+2.50\%$).
 
-4. **Internal consistency holds.** The conditional means combine correctly to reproduce the unconditional mean.
+4. **The bias decomposes cleanly.** Approximately $86\%$ of the effect is PC uplift (primes pushing factors onto neighbors); $14\%$ is CC suppression (composites pulling factors away from neighbors).
+
+5. **Internal consistency holds.** The conditional means combine correctly to reproduce the unconditional mean.
 
 These observations are not explained by finite-size effects, implementation artifacts, or baseline choice. In the next section, we develop a first-principles heuristic that explains both the existence and the magnitude of the bias.
