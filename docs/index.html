@@ -410,6 +410,82 @@
 
     <section>
         <div class="container">
+            <h2>Theoretical Derivation</h2>
+            <p class="section-desc">
+                The bias arises from mutual exclusivity: for p &ge; 5, <code>p|a AND p|b</code> is impossible
+                (since p | (b-a) = 2 requires p = 2).
+            </p>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>The Core Mechanism</h3>
+                    <p style="color: var(--text-muted);">
+                        Conditioning on a being prime means p &nmid; a for all p.
+                        By mutual exclusivity, this <em>boosts</em> P(p|b):
+                    </p>
+                    <div class="math-block">
+P(p|b | a prime) = P(p|b) / P(p &nmid; a)
+                 = (1/p) / (1 - 1/p)
+                 = 1/(p-1)
+                    </div>
+                    <p style="color: var(--text-muted);">
+                        In CC, some prime q|a, possibly q=p, reducing P(p|b) slightly.
+                    </p>
+                </div>
+
+                <div class="card">
+                    <h3>The Key Sum</h3>
+                    <p style="color: var(--text-muted);">
+                        The selection bias sums contributions from each prime:
+                    </p>
+                    <div class="math-block">
+&Delta;&omega; = &sum;_{p&ge;5} [P(p|b|PC) - P(p|b|CC)]
+              &asymp; 0.84 &middot; &sum;_{p&ge;5} 1/[p(p-1)]
+              = 0.84 &times; 0.1065
+              = 0.089
+                    </div>
+                    <p style="color: var(--text-muted);">
+                        The factor 0.84 is an empirical correction for correlations.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 24px;">
+                <h3>Model vs Empirical</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Quantity</th>
+                            <th>First-Principles Model</th>
+                            <th>Empirical (K=10<sup>9</sup>)</th>
+                            <th>Ratio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>&Delta;&omega;</td>
+                            <td class="mono">0.099</td>
+                            <td class="mono">0.083</td>
+                            <td class="mono">1.20</td>
+                        </tr>
+                        <tr>
+                            <td>Bias %</td>
+                            <td class="mono">3.51%</td>
+                            <td class="mono">2.93%</td>
+                            <td class="mono">1.20</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="color: var(--text-muted); margin-top: 12px;">
+                    The 20% overestimate likely comes from the independence assumption
+                    (divisibility by different primes is not truly independent).
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
             <h2>Technical Details</h2>
             <div class="grid-2">
                 <div class="card">
