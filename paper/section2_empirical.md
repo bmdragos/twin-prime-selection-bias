@@ -61,6 +61,8 @@ $$
 
 Both values are positive and statistically significant given the sample sizes involved.
 
+**Error bars.** The uncertainty $\pm 0.0001$ reported in Observation 1.1 is the standard error of the mean: $\sigma/\sqrt{n}$, where $\sigma \approx 1.1$ is the empirical standard deviation of $\omega$ in each population. With sample sizes exceeding $10^8$, the standard error is approximately $1.1/\sqrt{10^8} \approx 10^{-4}$. The difference of means has standard error $\sqrt{\sigma_1^2/n_1 + \sigma_2^2/n_2} \approx 1.4 \times 10^{-4}$.
+
 ## 2.4 Stability Across Scale
 
 A natural concern is whether the observed bias is a finite-size artifact that might vanish or drift at larger scales. We tested this by computing the bias at three scales:

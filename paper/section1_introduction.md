@@ -17,7 +17,7 @@ Let $\omega(n)$ denote the number of distinct prime factors of $n$. We classify 
 - **CP:** $a$ is composite, $b$ is prime
 - **CC:** Both are composite
 
-**Theorem 1.1** (Empirical). At $K = 10^9$ pairs:
+**Observation 1.1** (Empirical). At $K = 10^9$ pairs:
 
 $$
 \mathbb{E}[\omega(b) \mid \text{PC}] - \mathbb{E}[\omega(b) \mid \text{CC}] = 0.0828 \pm 0.0001
@@ -25,17 +25,17 @@ $$
 
 corresponding to a relative uplift of $2.93\%$.
 
-**Theorem 1.2** (Stability). The selection bias is stable:
+**Observation 1.2** (Stability). The selection bias is stable:
 - Across scale: $2.96\%, 2.94\%, 2.93\%$ at $K = 10^7, 10^8, 10^9$
 - Within runs: $3.00\%$ in the tail $[0.9K, K]$ vs $2.93\%$ in the full sample
 
-**Theorem 1.3** (Heuristic Derivation). The bias is explained by mutual exclusivity of divisibility. For each prime $p \geq 5$, conditioning on $p \nmid a$ boosts $\mathbb{P}(p \mid b)$ from $1/p$ to $1/(p-1)$. Summing the per-prime increments:
+**Proposition 1.3** (Heuristic). The bias is explained by mutual exclusivity of divisibility. For each prime $p \geq 5$, conditioning on $p \nmid a$ boosts $\mathbb{P}(p \mid b)$ from $1/p$ to $1/(p-1)$. Summing the per-prime increments:
 
 $$
 \sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065
 $$
 
-This predicts the correct order of magnitude; the empirical shift is $78\%$ of this value.
+This predicts $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}]$. Empirically, this difference is $0.107$, matching the prediction to within $1\%$.
 
 ## 1.3 Context
 
@@ -67,5 +67,5 @@ The implementation is available at [repository URL].
 
 - **Section 2** presents the empirical observations: state distributions, selection bias, and stability across scale and within runs.
 - **Section 3** derives the bias from first principles via the mutual exclusivity mechanism.
-- **Section 4** formalizes the correlations using a transfer-matrix model.
+- **Section 4** formalizes the conditioning algebra using a residue-class model.
 - **Section 5** discusses implications, open questions, and why the result is "not surprising, but still useful."

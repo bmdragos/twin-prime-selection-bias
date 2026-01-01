@@ -1,0 +1,11 @@
+# References
+
+1. G. H. Hardy and S. Ramanujan, "The normal number of prime factors of a number $n$," *Quarterly Journal of Mathematics* **48** (1917), 76–92.
+
+2. P. Erdős and M. Kac, "The Gaussian law of errors in the theory of additive number theoretic functions," *American Journal of Mathematics* **62** (1940), 738–742.
+
+3. G. H. Hardy and J. E. Littlewood, "Some problems of 'Partitio Numerorum': III. On the expression of a number as a sum of primes," *Acta Mathematica* **44** (1923), 1–70.
+
+4. H. Halberstam and H.-E. Richert, *Sieve Methods*, London Mathematical Society Monographs, Academic Press, London, 1974.
+
+5. J. Friedlander and H. Iwaniec, *Opera de Cribro*, American Mathematical Society Colloquium Publications, vol. 57, American Mathematical Society, Providence, RI, 2010.

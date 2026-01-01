@@ -6,7 +6,7 @@ The selection bias we observe is, in hindsight, predictable from first principle
 
 We offer three responses.
 
-**The quantitative match is nontrivial.** While the qualitative direction of the bias (positive) follows from mutual exclusivity, the quantitative match---the convergent sum $\sum 1/[p(p-1)] = 0.1065$ capturing 78% of the empirical effect---is not obvious a priori. The calibration factor $c = 0.78$ encodes subtle correlations that could plausibly have been much smaller or much larger.
+**The quantitative match is nontrivial.** While the qualitative direction of the bias (positive) follows from mutual exclusivity, the quantitative match is striking: the convergent sum $\sum 1/[p(p-1)] = 0.1065$ predicts $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}]$ to within $1\%$. This near-exact agreement was not guaranteed a priori.
 
 **The stability requires explanation.** The bias persists unchanged across five orders of magnitude in $K$ and is stable (or slightly increasing) in tail windows. This rules out transient effects or slowly drifting artifacts. The convergence of the infinite sum explains this stability: almost all contribution comes from primes below 100.
 
@@ -38,9 +38,9 @@ The dominant cost at $K = 10^9$ is the sieve itself (100s of 280s total), not th
 
 ## 5.4 Open Questions
 
-**1. Can the calibration factor be computed analytically?**
+**1. Can the conditioning transformation be made explicit?**
 
-The factor $c = 0.78$ is currently determined empirically. A direct computation from the transfer-matrix formalism (Section 4) or from sieve-theoretic methods would be valuable.
+The PC-vs-CC difference of $0.0828$ relates to the full conditional difference of $0.107$ through the conditioning on "$b$ composite." A closed-form expression for this transformation would clarify the relationship between the two statistics.
 
 **2. Does the bias extend to other prime patterns?**
 
@@ -58,7 +58,7 @@ Despite being "not surprising," the selection bias has practical value:
 
 **For understanding conditioned populations.** The bias is a clean example of how conditioning on one variable (primality of $a$) affects the distribution of a related variable (prime factors of $b$). Similar selection effects appear throughout statistics and machine learning.
 
-**As a pedagogical example.** The derivation---from exact local identity, through heuristic sum, to empirical calibration---illustrates the interplay between rigor and heuristic in analytic number theory. The same pattern appears in the Hardy-Littlewood circle method, sieve theory, and random matrix conjectures.
+**As a pedagogical example.** The derivation---from exact local identity, through heuristic sum, to empirical verification---illustrates the interplay between rigor and heuristic in analytic number theory. The same pattern appears in the Hardy-Littlewood circle method, sieve theory, and random matrix conjectures.
 
 ## 5.6 Conclusion
 
@@ -67,6 +67,6 @@ We have documented a 3% selection bias in the number of distinct prime factors o
 - Is persistent across three orders of magnitude in sample size
 - Is stable or slightly increasing in tail windows
 - Admits a first-principles explanation via mutual exclusivity
-- Is quantitatively predicted (to within 22%) by an elementary convergent sum
+- Is quantitatively predicted (to within $1\%$) by an elementary convergent sum, when compared to the correctly-aligned conditional expectation
 
-The phenomenon is simple, the explanation is elementary, and the quantitative agreement is satisfying. Sometimes the most instructive results are those that confirm what "should" be true---and measure exactly how true it is.
+The phenomenon is simple, the explanation is elementary, and the quantitative agreement is striking. Sometimes the most instructive results are those that confirm what "should" be true---and verify the heuristic to high precision.

@@ -2,9 +2,9 @@
 
 ## 4.1 Motivation
 
-The independent-prime heuristic of Section 3 overshoots the empirical bias by $\approx 22\%$. This discrepancy arises because divisibility events are not independent: after conditioning on the primality of $a = 6k-1$, the divisibility of $b = 6k+1$ by different primes $p$ and $q$ becomes correlated.
+Section 3 established that the independent-prime heuristic, when applied to the correctly-aligned conditional expectations, predicts the observed effect with high accuracy. The purpose of this section is to provide a systematic framework for computing conditional expectations under various conditioning schemes.
 
-To quantify these correlations exactly (for any finite set of primes), we formulate a residue-class model using inclusion-exclusion over the joint divisibility states. While this model can be written in matrix form, we do not invoke any spectral gap or decay-of-correlations results; it serves only as a bookkeeping device for exact computation of conditional expectations.
+The residue-class model uses inclusion-exclusion over joint divisibility states to compute exact conditional expectations for any finite set of primes. It serves as a bookkeeping device that clarifies how different conditioning choices transform the expectations.
 
 ## 4.2 State Space
 
@@ -67,27 +67,27 @@ $$
 
 The conditional expectation $\mathbb{E}[|\sigma_b| \mid \text{CC}] = 1$ (exactly one prime divides $b$ in each CC state).
 
-## 4.6 Convergence to the Singular-Series Correction
+## 4.6 Conditioning Transformations
 
-As $|\mathcal{P}| \to \infty$, the model expectations converge to true expectations over all primes. Numerical experiments show:
+The residue-class model clarifies why different conditioning schemes yield different $\omega$-expectations.
 
-$$
-\lim_{|\mathcal{P}| \to \infty} \frac{\mathbb{E}[|\sigma_b| \mid \text{PC}] - \mathbb{E}[|\sigma_b| \mid \text{CC}]}{\sum_{p \in \mathcal{P}} 1/[p(p-1)]} \approx 0.78.
-$$
+**Primary conditional:** For $\mathbb{E}[|\sigma_b| \mid \sigma_a = \emptyset]$ (i.e., conditioning on "$a$ prime" with respect to $\mathcal{P}$), the heuristic sum $\sum_{p \in \mathcal{P}} 1/[p(p-1)]$ is exact as $|\mathcal{P}| \to \infty$.
 
-This ratio is the same correction factor observed empirically in Section 3.3. Its appearance in the residue-class model confirms that the discrepancy from the naive heuristic is a consequence of the local correlations (mutual exclusivity) rather than finite-size effects or large-prime contributions.
+**Secondary conditional:** For $\mathbb{E}[|\sigma_b| \mid \text{PC}] - \mathbb{E}[|\sigma_b| \mid \text{CC}]$, additional conditioning on "$b$ composite" modifies the expectation. The PC case conditions on $\sigma_a = \emptyset$ and $\sigma_b \neq \emptyset$; the CC case conditions on $\sigma_a \neq \emptyset$ and $\sigma_b \neq \emptyset$.
+
+This additional conditioning explains why the PC-vs-CC difference ($0.0828$) is smaller than the full conditional difference ($0.107$): we are excluding the $\sigma_b = \emptyset$ cases (prime $b$), which have $|\sigma_b| = 0$ and occur with different probabilities depending on $\sigma_a$.
 
 ## 4.7 Connection to Sieve Theory
 
-The residue-class model is essentially an application of inclusion-exclusion over the sieve dimension. In the language of sieve theory:
+The residue-class model is an application of inclusion-exclusion over the sieve dimension. In the language of sieve theory:
 
-1. **The sieve weights.** The probability measure $\pi(\sigma_a, \sigma_b)$ corresponds to sieve weights on the residue classes modulo the primorial $P_\# = \prod_{p \in \mathcal{P}} p$.
+1. **Sieve weights.** The probability measure $\pi(\sigma_a, \sigma_b)$ corresponds to sieve weights on the residue classes modulo the primorial $P_\# = \prod_{p \in \mathcal{P}} p$.
 
-2. **The fundamental lemma.** The mutual exclusivity constraint ($\sigma_a \cap \sigma_b = \emptyset$) reduces the state space from $4^r$ to $3^r$, encoding the local density corrections that produce the singular series.
+2. **Local constraint.** The mutual exclusivity constraint ($\sigma_a \cap \sigma_b = \emptyset$) reduces the state space from $4^r$ to $3^r$.
 
-3. **Product structure.** The factorization $\pi(\sigma_a, \sigma_b) = \prod_p (\text{local factor})$ mirrors the Euler product structure in the Hardy-Littlewood constant $C_2$.
+3. **Product structure.** The factorization $\pi(\sigma_a, \sigma_b) = \prod_p (\text{local factor})$ enables exact computation via inclusion-exclusion.
 
-The model provides exact computation of conditional expectations for any finite $\mathcal{P}$, giving rigorous (if non-asymptotic) bounds on the correction factor.
+The model provides exact conditional expectations for any finite $\mathcal{P}$, useful for understanding how different conditioning choices transform expectations.
 
 ## 4.8 Limitations
 
