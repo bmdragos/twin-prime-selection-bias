@@ -357,6 +357,59 @@
 
     <section>
         <div class="container">
+            <h2>Window Stability</h2>
+            <p class="section-desc">
+                Critical test: is the bias stable in the tail, not just in prefix averages?
+                This rules out slowly drifting behavior.
+            </p>
+            <div class="chart-container">
+                <div id="chart-windows" class="chart"></div>
+            </div>
+            <div class="card" style="margin-top: 24px;">
+                <h3>Logarithmic Bin Analysis</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bin</th>
+                            <th>Selection Bias</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="mono">[10<sup>4</sup>, 10<sup>5</sup>)</td><td class="mono">2.92%</td></tr>
+                        <tr><td class="mono">[10<sup>5</sup>, 10<sup>6</sup>)</td><td class="mono">3.08%</td></tr>
+                        <tr><td class="mono">[10<sup>6</sup>, 10<sup>7</sup>)</td><td class="mono">3.06%</td></tr>
+                        <tr><td class="mono">[10<sup>7</sup>, 10<sup>8</sup>)</td><td class="mono">3.01%</td></tr>
+                        <tr><td class="mono">[10<sup>8</sup>, 10<sup>9</sup>)</td><td class="mono">2.99%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Baseline Comparisons</h2>
+            <p class="section-desc">
+                Is the bias specific to "PC vs CC" or does it hold against unconditional composites?
+            </p>
+            <div class="chart-container">
+                <div id="chart-baselines" class="chart"></div>
+            </div>
+            <div class="card" style="margin-top: 24px;">
+                <h3>Key Insight</h3>
+                <p style="color: var(--text-muted);">
+                    CC composites are themselves a <em>conditioned</em> population (conditioned on "other side also composite").
+                    The unconditional composite baseline has &omega; = 2.836, between PC (2.907) and CC (2.824).
+                </p>
+                <div class="math-block">
+                    Mixture check: 0.14 &times; 2.907 + 0.86 &times; 2.824 = 2.835 &asymp; 2.836 ✓
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
             <h2>Technical Details</h2>
             <div class="grid-2">
                 <div class="card">
@@ -517,6 +570,73 @@
             xaxis: { ...plotlyLayout.xaxis, title: 'P (prime threshold)' },
             yaxis: { ...plotlyLayout.yaxis, title: 'Mean omega <= P' },
             legend: { orientation: 'h', y: -0.15 }
+        }, plotlyConfig);
+
+        // Chart 5: Window Stability
+        Plotly.newPlot('chart-windows', [{
+            x: ['Full [1,K]', '[K/2, K]', '[0.9K, K]', '[0.99K, K]'],
+            y: [2.9326, 3.0024, 3.0027, 2.9938],
+            type: 'bar',
+            marker: {
+                color: ['#3b82f6', '#22c55e', '#22c55e', '#22c55e'],
+            },
+            text: ['2.93%', '3.00%', '3.00%', '2.99%'],
+            textposition: 'outside',
+            hovertemplate: '%{x}<br>Bias: %{y:.4f}%<extra></extra>'
+        }], {
+            ...plotlyLayout,
+            title: { text: 'Selection Bias by Window (K=10^9)', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: 'Window' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Bias %', range: [2.7, 3.2] },
+            annotations: [{
+                x: 2,
+                y: 3.15,
+                text: 'Tail windows show stable (slightly higher) bias',
+                showarrow: false,
+                font: { size: 12, color: '#22c55e' }
+            }]
+        }, plotlyConfig);
+
+        // Chart 6: Baseline Comparisons
+        Plotly.newPlot('chart-baselines', [{
+            x: ['PC composite', 'Unconditional', 'CC composite'],
+            y: [2.9067, 2.8357, 2.8239],
+            type: 'bar',
+            marker: {
+                color: ['#3b82f6', '#888888', '#f59e0b'],
+            },
+            text: ['2.907', '2.836', '2.824'],
+            textposition: 'outside',
+            hovertemplate: '%{x}<br>Mean omega: %{y:.4f}<extra></extra>'
+        }], {
+            ...plotlyLayout,
+            title: { text: 'Mean Omega by Population (K=10^9)', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: 'Population' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Mean omega', range: [2.75, 2.95] },
+            annotations: [
+                {
+                    x: 0.5,
+                    y: 2.92,
+                    ax: 1,
+                    ay: 2.87,
+                    text: '+2.50%',
+                    showarrow: true,
+                    arrowhead: 2,
+                    arrowcolor: '#888',
+                    font: { size: 11, color: '#888' }
+                },
+                {
+                    x: 1.5,
+                    y: 2.87,
+                    ax: 2,
+                    ay: 2.86,
+                    text: '+0.42%',
+                    showarrow: true,
+                    arrowhead: 2,
+                    arrowcolor: '#888',
+                    font: { size: 11, color: '#888' }
+                }
+            ]
         }, plotlyConfig);
     </script>
 </body>
