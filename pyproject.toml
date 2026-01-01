@@ -1,0 +1,28 @@
+[project]
+name = "twin-prime-selection-bias"
+version = "0.1.0"
+description = "Selection bias in twin prime factor counts"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "matplotlib",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupyter",
+    "ipykernel",
+]
+gpu = [
+    "cupy-cuda12x",
+    "numba",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "jupyter",
+    "ipykernel",
+]
