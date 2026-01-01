@@ -412,73 +412,64 @@
         <div class="container">
             <h2>Theoretical Derivation</h2>
             <p class="section-desc">
-                The bias arises from mutual exclusivity: for p &ge; 5, <code>p|a AND p|b</code> is impossible
-                (since p | (b-a) = 2 requires p = 2).
+                A first-principles derivation in three layers: exact identity, heuristic sum, empirical calibration.
             </p>
 
-            <div class="grid-2">
+            <div class="card">
+                <h3>Layer 1: The Exact Local Identity</h3>
+                <p style="color: var(--text-muted);">
+                    For each prime p &ge; 5, exactly one residue class k (mod p) has p | (6k-1),
+                    and exactly one has p | (6k+1). These are <strong>disjoint</strong> since
+                    p | (b-a) = 2 requires p = 2. So the events "p|a" and "p|b" are mutually exclusive.
+                </p>
+                <div class="math-block">
+P(p|b | p &nmid; a) = P(p|b) / P(p &nmid; a) = (1/p) / (1-1/p) = 1/(p-1)
+                </div>
+                <p style="color: var(--text-muted);">
+                    <strong>This step is exact.</strong> Everything else is heuristic.
+                </p>
+            </div>
+
+            <div class="grid-2" style="margin-top: 24px;">
                 <div class="card">
-                    <h3>The Core Mechanism</h3>
+                    <h3>Layer 2: The Independent-Prime Sum</h3>
                     <p style="color: var(--text-muted);">
-                        Conditioning on a being prime means p &nmid; a for all p.
-                        By mutual exclusivity, this <em>boosts</em> P(p|b):
+                        Per-prime increment: &delta;<sub>p</sub> = 1/(p-1) - 1/p = 1/[p(p-1)]
                     </p>
                     <div class="math-block">
-P(p|b | a prime) = P(p|b) / P(p &nmid; a)
-                 = (1/p) / (1 - 1/p)
-                 = 1/(p-1)
+&sum;_{p&ge;5} 1/[p(p-1)] = 0.1065
                     </div>
                     <p style="color: var(--text-muted);">
-                        In CC, some prime q|a, possibly q=p, reducing P(p|b) slightly.
+                        This sum <strong>converges</strong>, explaining why the bias stabilizes.
                     </p>
                 </div>
 
                 <div class="card">
-                    <h3>The Key Sum</h3>
+                    <h3>Layer 3: Empirical Calibration</h3>
                     <p style="color: var(--text-muted);">
-                        The selection bias sums contributions from each prime:
+                        The naive prediction overshoots. Define calibration factor:
                     </p>
                     <div class="math-block">
-&Delta;&omega; = &sum;_{p&ge;5} [P(p|b|PC) - P(p|b|CC)]
-              &asymp; 0.84 &middot; &sum;_{p&ge;5} 1/[p(p-1)]
-              = 0.84 &times; 0.1065
-              = 0.089
+c = &Delta;&omega;<sub>emp</sub> / 0.1065
+  = 0.0828 / 0.1065
+  = 0.78
                     </div>
                     <p style="color: var(--text-muted);">
-                        The factor 0.84 is an empirical correction for correlations.
+                        The ~22% overshoot comes from correlations + CC conditioning.
                     </p>
                 </div>
             </div>
 
             <div class="card" style="margin-top: 24px;">
-                <h3>Model vs Empirical</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Quantity</th>
-                            <th>First-Principles Model</th>
-                            <th>Empirical (K=10<sup>9</sup>)</th>
-                            <th>Ratio</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>&Delta;&omega;</td>
-                            <td class="mono">0.099</td>
-                            <td class="mono">0.083</td>
-                            <td class="mono">1.20</td>
-                        </tr>
-                        <tr>
-                            <td>Bias %</td>
-                            <td class="mono">3.51%</td>
-                            <td class="mono">2.93%</td>
-                            <td class="mono">1.20</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p style="color: var(--text-muted); margin-top: 12px;">
-                    The 20% overestimate likely comes from the independence assumption
-                    (divisibility by different primes is not truly independent).
+                <h3>Paper-Ready Summary</h3>
+                <p style="color: var(--text-muted); font-style: italic;">
+                    For each prime p &ge; 5, the congruences 6k &equiv; &plusmn;1 (mod p) have unique solutions,
+                    so among k (mod p) exactly one class satisfies p | (6k-1) and exactly one satisfies p | (6k+1).
+                    These are disjoint since p | 2 would be required for overlap. Hence conditioning on p &nmid; (6k-1)
+                    boosts the probability that p | (6k+1) from 1/p to 1/(p-1). Summing the per-prime increment
+                    1/[p(p-1)] over p &ge; 5 yields a convergent absolute shift of 0.1065. Empirically, the observed
+                    PC&ndash;CC shift at K=10<sup>9</sup> is 0.083, about 22% smaller than the naive prediction,
+                    consistent with residual arithmetic correlations and the fact that CC is itself a conditioned population.
                 </p>
             </div>
         </div>
