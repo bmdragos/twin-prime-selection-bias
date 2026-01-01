@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twin Prime Selection Bias</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-2: #1e1e1e;
+            --border: #2a2a2a;
+            --text: #e5e5e5;
+            --text-muted: #888;
+            --accent: #3b82f6;
+            --accent-2: #8b5cf6;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .stat-box {
+            display: inline-block;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 48px;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--success);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Sections */
+        section {
+            padding: 60px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        section .section-desc {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h3 .icon {
+            font-size: 1.25rem;
+        }
+
+        /* Math */
+        .math-block {
+            background: var(--surface-2);
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--surface-2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.875em;
+        }
+
+        /* State colors */
+        .state-pp { color: #22c55e; }
+        .state-pc { color: #3b82f6; }
+        .state-cp { color: #8b5cf6; }
+        .state-cc { color: #f59e0b; }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td.mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="container">
+            <h1>Twin Prime Selection Bias</h1>
+            <p class="subtitle">
+                Composites adjacent to primes have systematically higher factor counts
+                than composites in purely composite pairs.
+            </p>
+            <div class="stat-box">
+                <div class="stat-value">+2.93%</div>
+                <div class="stat-label">Selection Bias in Omega</div>
+            </div>
+        </div>
+    </div>
+
+    <section>
+        <div class="container">
+            <h2>The Core Finding</h2>
+            <p class="section-desc">
+                For twin prime candidates (6k-1, 6k+1), we classify each pair by primality state.
+                The composite member of a PC pair has ~2.93% more distinct prime factors than composites in CC pairs.
+            </p>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3><span class="icon">🔢</span> Twin Prime Pairs</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 12px;">
+                        All primes &gt; 3 are of form 6k&plusmn;1. We examine pairs (a, b) = (6k-1, 6k+1):
+                    </p>
+                    <ul style="list-style: none; margin-top: 12px;">
+                        <li><span class="state-pp">PP</span> &mdash; Both prime (twin primes!)</li>
+                        <li><span class="state-pc">PC</span> &mdash; a prime, b composite</li>
+                        <li><span class="state-cp">CP</span> &mdash; a composite, b prime</li>
+                        <li><span class="state-cc">CC</span> &mdash; Both composite</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3><span class="icon">📊</span> Selection Bias</h3>
+                    <p style="color: var(--text-muted);">
+                        Omega (&omega;) counts distinct prime factors. We find:
+                    </p>
+                    <div class="math-block">
+                        &omega;(PC composite) &gt; &omega;(CC composite)
+                    </div>
+                    <p style="color: var(--text-muted);">
+                        Being "selected" by adjacency to a prime correlates with having
+                        more prime factors. The bias is stable across 10<sup>7</sup> to 10<sup>9</sup> pairs.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Bias Stability Across Scale</h2>
+            <p class="section-desc">
+                The selection bias remains remarkably stable as we increase K from 10 million to 1 billion pairs.
+            </p>
+            <div class="chart-container">
+                <div id="chart-stability" class="chart"></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>State Distribution</h2>
+            <p class="section-desc">
+                As K increases, the fraction of prime-containing pairs decreases (primes thin out).
+            </p>
+            <div class="chart-container">
+                <div id="chart-distribution" class="chart"></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Mean Omega by State</h2>
+            <p class="section-desc">
+                Comparing mean &omega; across states at K=10<sup>9</sup>. PP pairs have &omega;=1 by definition (primes).
+            </p>
+            <div class="chart-container">
+                <div id="chart-omega" class="chart"></div>
+            </div>
+
+            <div class="card" style="margin-top: 24px;">
+                <h3>Results at K = 10<sup>9</sup></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>State</th>
+                            <th>Count</th>
+                            <th>Fraction</th>
+                            <th>Mean &omega;(a)</th>
+                            <th>Mean &omega;(b)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="state-pp">PP</td>
+                            <td class="mono">17,244,408</td>
+                            <td class="mono">1.72%</td>
+                            <td class="mono">1.0000</td>
+                            <td class="mono">1.0000</td>
+                        </tr>
+                        <tr>
+                            <td class="state-pc">PC</td>
+                            <td class="mono">122,531,277</td>
+                            <td class="mono">12.25%</td>
+                            <td class="mono">1.0000</td>
+                            <td class="mono">2.9067</td>
+                        </tr>
+                        <tr>
+                            <td class="state-cp">CP</td>
+                            <td class="mono">122,525,274</td>
+                            <td class="mono">12.25%</td>
+                            <td class="mono">2.9068</td>
+                            <td class="mono">1.0000</td>
+                        </tr>
+                        <tr>
+                            <td class="state-cc">CC</td>
+                            <td class="mono">737,699,041</td>
+                            <td class="mono">73.77%</td>
+                            <td class="mono">2.8239</td>
+                            <td class="mono">2.8239</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Model vs Empirical</h2>
+            <p class="section-desc">
+                Theoretical model predictions vs empirical measurements for &omega;&le;P on PC composites.
+            </p>
+            <div class="chart-container">
+                <div id="chart-model" class="chart"></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="container">
+            <h2>Technical Details</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3><span class="icon">⚡</span> GPU Acceleration</h3>
+                    <p style="color: var(--text-muted);">
+                        Computed on NVIDIA GB10 (DGX Spark) with unified memory.
+                        GPU-side aggregation avoids 8GB array transfers, achieving
+                        <strong>6.2x speedup</strong> over CPU-parallel.
+                    </p>
+                    <div class="math-block">
+                        K=10^9: 189.8s total runtime
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><span class="icon">🧮</span> Methodology</h3>
+                    <p style="color: var(--text-muted);">
+                        SPF (smallest prime factor) sieve enables O(log n) factorization.
+                        Uses uint32 with 0=prime sentinel to halve memory (24GB for K=10<sup>9</sup>).
+                        CUDA kernels compute &omega; in parallel across 1B pairs.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>
+                <a href="https://github.com/bmdragos/twin-prime-selection-bias">View on GitHub</a>
+                &nbsp;&middot;&nbsp;
+                Built with Plotly.js
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const plotlyConfig = { responsive: true, displayModeBar: false };
+        const plotlyLayout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { family: 'Inter, sans-serif', color: '#e5e5e5' },
+            margin: { t: 40, r: 40, b: 60, l: 60 },
+            xaxis: { gridcolor: '#2a2a2a', zerolinecolor: '#2a2a2a' },
+            yaxis: { gridcolor: '#2a2a2a', zerolinecolor: '#2a2a2a' }
+        };
+
+        // Chart 1: Bias Stability
+        Plotly.newPlot('chart-stability', [{
+            x: ['10^7', '10^8', '10^9'],
+            y: [2.956, 2.940, 2.933],
+            type: 'scatter',
+            mode: 'lines+markers',
+            marker: { size: 12, color: '#22c55e' },
+            line: { width: 3, color: '#22c55e' },
+            name: 'Selection Bias %',
+            hovertemplate: 'K = %{x}<br>Bias: %{y:.3f}%<extra></extra>'
+        }], {
+            ...plotlyLayout,
+            title: { text: 'Selection Bias vs Sample Size', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: 'K (number of pairs)' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Bias %', range: [2.8, 3.1] }
+        }, plotlyConfig);
+
+        // Chart 2: State Distribution
+        Plotly.newPlot('chart-distribution', [
+            {
+                x: ['10^7', '10^8', '10^9'],
+                y: [2.81, 2.26, 1.72],
+                name: 'PP',
+                type: 'bar',
+                marker: { color: '#22c55e' }
+            },
+            {
+                x: ['10^7', '10^8', '10^9'],
+                y: [15.01, 13.62, 12.25],
+                name: 'PC',
+                type: 'bar',
+                marker: { color: '#3b82f6' }
+            },
+            {
+                x: ['10^7', '10^8', '10^9'],
+                y: [15.00, 13.62, 12.25],
+                name: 'CP',
+                type: 'bar',
+                marker: { color: '#8b5cf6' }
+            },
+            {
+                x: ['10^7', '10^8', '10^9'],
+                y: [67.18, 70.50, 73.77],
+                name: 'CC',
+                type: 'bar',
+                marker: { color: '#f59e0b' }
+            }
+        ], {
+            ...plotlyLayout,
+            title: { text: 'State Distribution by K', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: 'K (number of pairs)' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Percentage %' },
+            barmode: 'stack',
+            legend: { orientation: 'h', y: -0.15 }
+        }, plotlyConfig);
+
+        // Chart 3: Mean Omega by State
+        Plotly.newPlot('chart-omega', [
+            {
+                x: ['PP', 'PC', 'CP', 'CC'],
+                y: [1.0, 1.0, 2.9068, 2.8239],
+                name: 'omega(a)',
+                type: 'bar',
+                marker: { color: '#3b82f6' },
+                hovertemplate: '%{x}<br>omega(a) = %{y:.4f}<extra></extra>'
+            },
+            {
+                x: ['PP', 'PC', 'CP', 'CC'],
+                y: [1.0, 2.9067, 1.0, 2.8239],
+                name: 'omega(b)',
+                type: 'bar',
+                marker: { color: '#8b5cf6' },
+                hovertemplate: '%{x}<br>omega(b) = %{y:.4f}<extra></extra>'
+            }
+        ], {
+            ...plotlyLayout,
+            title: { text: 'Mean Omega by State (K=10^9)', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: 'State' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Mean omega' },
+            barmode: 'group',
+            legend: { orientation: 'h', y: -0.15 }
+        }, plotlyConfig);
+
+        // Chart 4: Model vs Empirical
+        const P_vals = [50, 97, 197, 397, 597, 797, 997];
+        const empirical = [1.0619, 1.2253, 1.3876, 1.5189, 1.5894, 1.6411, 1.6781];
+        const model = [1.4723, 1.5757, 1.6800, 1.7657, 1.8122, 1.8465, 1.8712];
+
+        Plotly.newPlot('chart-model', [
+            {
+                x: P_vals,
+                y: empirical,
+                name: 'Empirical',
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: { size: 8, color: '#3b82f6' },
+                line: { width: 2, color: '#3b82f6' }
+            },
+            {
+                x: P_vals,
+                y: model,
+                name: 'Model',
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: { size: 8, color: '#f59e0b' },
+                line: { width: 2, color: '#f59e0b', dash: 'dash' }
+            }
+        ], {
+            ...plotlyLayout,
+            title: { text: 'PC Composite: Model vs Empirical omega<=P', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: 'P (prime threshold)' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Mean omega <= P' },
+            legend: { orientation: 'h', y: -0.15 }
+        }, plotlyConfig);
+    </script>
+</body>
+</html>
