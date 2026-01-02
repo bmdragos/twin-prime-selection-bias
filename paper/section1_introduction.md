@@ -29,7 +29,7 @@ corresponding to a relative uplift of $2.93\%$.
 - Across scale: $2.96\%, 2.94\%, 2.93\%$ at $K = 10^7, 10^8, 10^9$
 - Within runs: $3.00\%$ in the tail $[0.9K, K]$ vs $2.93\%$ in the full sample
 
-**Proposition 1.3** (Heuristic). The bias is explained by mutual exclusivity of divisibility. For each prime $p \geq 5$, conditioning on $p \nmid a$ boosts $\mathbb{P}(p \mid b)$ from $1/p$ to $1/(p-1)$. Summing the per-prime increments:
+**Proposition 1.3** (Heuristic). The bias is explained by mutual exclusivity of divisibility. For each prime $p \geq 5$, the identity $\mathbb{P}(p \mid b \mid p \nmid a) = 1/(p-1)$ is exact. Under the heuristic that primes are equidistributed among allowed residue classes modulo $p$, this extends to $\mathbb{P}(p \mid b \mid a \text{ prime}) \approx 1/(p-1)$. Summing the per-prime increments:
 
 $$
 \sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065
@@ -46,8 +46,9 @@ Related phenomena include:
 - **Chebyshev's bias:** Among primes, there are slightly more congruent to $3 \pmod 4$ than to $1 \pmod 4$ in initial segments.
 - **Prime races:** The relative densities of primes in different residue classes fluctuate in predictable ways.
 - **Cramer's model:** Random models of primes fail to capture local correlations induced by small primes.
+- **Chen-type results:** Sieve methods have long studied the factorization of $p + 2$ when $p$ is prime, showing that $p + 2$ is either prime or a product of two primes for infinitely many $p$ [6].
 
-Our selection bias is of a different character: it concerns the *composite* partners of primes, not the primes themselves.
+Our selection bias is of a different character: it concerns the *mean* number of prime factors of composites adjacent to primes, not the extremal factorization structure. Nevertheless, the underlying mechanism (mutual exclusivity of divisibility) is the same local constraint that drives sieve-theoretic results on shifted primes.
 
 ## 1.4 Methods
 
@@ -56,7 +57,7 @@ The computation required processing $10^9$ pairs, each requiring:
 2. Complete factorization (via smallest-prime-factor lookup)
 3. State-conditional aggregation
 
-We achieved this in under 5 minutes on an NVIDIA GB10 (Grace Hopper architecture) using:
+We achieved this in under 5 minutes on an NVIDIA DGX Spark (GB10, Blackwell architecture) using:
 - A segmented sieve with $\sim 10^3$ workers
 - GPU-accelerated $\omega$-computation with on-device aggregation
 - Unified memory to eliminate CPU-GPU transfer bottlenecks

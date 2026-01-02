@@ -44,7 +44,7 @@ Our central empirical finding concerns the mean value of $\omega$ for the compos
 |------------|---------------|-------------|
 | PC composite (the $b$ in PC) | 2.9067 | 122,531,277 |
 | CP composite (the $a$ in CP) | 2.9068 | 122,525,274 |
-| CC composite (either $a$ or $b$) | 2.8239 | 737,699,041 |
+| CC composite (the $b$ in CC) | 2.8239 | 737,699,041 |
 | Unconditional composite at $6k+1$ | 2.8357 | 860,230,318 |
 
 The **selection bias** is defined as the relative uplift:
@@ -61,7 +61,11 @@ $$
 
 Both values are positive and statistically significant given the sample sizes involved.
 
-**Error bars.** The uncertainty $\pm 0.0001$ reported in Observation 1.1 is the standard error of the mean: $\sigma/\sqrt{n}$, where $\sigma \approx 1.1$ is the empirical standard deviation of $\omega$ in each population. With sample sizes exceeding $10^8$, the standard error is approximately $1.1/\sqrt{10^8} \approx 10^{-4}$. The difference of means has standard error $\sqrt{\sigma_1^2/n_1 + \sigma_2^2/n_2} \approx 1.4 \times 10^{-4}$.
+**Error bars.** The uncertainty $\pm 0.0001$ reported in Observation 1.1 is the standard error of the mean. The empirical standard deviations are $s_{PC} \approx 1.08$ and $s_{CC} \approx 1.09$. With $n_{PC} = 1.23 \times 10^8$ and $n_{CC} = 7.38 \times 10^8$, the standard error of the difference is:
+$$
+\mathrm{SE}(\bar\omega_{PC} - \bar\omega_{CC}) = \sqrt{\frac{s_{PC}^2}{n_{PC}} + \frac{s_{CC}^2}{n_{CC}}} \approx 1.0 \times 10^{-4}.
+$$
+The $\pm 0.0001$ is a standard error, not a confidence interval.
 
 ## 2.4 Stability Across Scale
 
@@ -118,7 +122,7 @@ $$
 = 0.14 \times 2.9067 + 0.86 \times 2.8239 = 2.8354
 $$
 
-The observed unconditional mean is $2.8357$, matching to four decimal places. This confirms that our conditional means are mutually consistent and that no systematic errors have been introduced.
+The observed unconditional mean is $2.8357$, matching within $3 \times 10^{-4}$—consistent with rounding of the reported means. This confirms that our conditional means are mutually consistent and that no systematic errors have been introduced.
 
 ## 2.7 Decomposition of the Bias
 

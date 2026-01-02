@@ -71,7 +71,7 @@ The conditional expectation $\mathbb{E}[|\sigma_b| \mid \text{CC}] = 1$ (exactly
 
 The residue-class model clarifies why different conditioning schemes yield different $\omega$-expectations.
 
-**Primary conditional:** For $\mathbb{E}[|\sigma_b| \mid \sigma_a = \emptyset]$ (i.e., conditioning on "$a$ prime" with respect to $\mathcal{P}$), the heuristic sum $\sum_{p \in \mathcal{P}} 1/[p(p-1)]$ is exact as $|\mathcal{P}| \to \infty$.
+**Primary conditional:** For each finite $\mathcal{P}$, the model gives exactly $\mathbb{E}[|\sigma_b| \mid \sigma_a = \emptyset] - \mathbb{E}[|\sigma_b|] = \sum_{p \in \mathcal{P}} 1/[p(p-1)]$. Since this sum converges rapidly, primes $p \leq 100$ already capture $\sim 98\%$ of the limiting constant.
 
 **Secondary conditional:** For $\mathbb{E}[|\sigma_b| \mid \text{PC}] - \mathbb{E}[|\sigma_b| \mid \text{CC}]$, additional conditioning on "$b$ composite" modifies the expectation. The PC case conditions on $\sigma_a = \emptyset$ and $\sigma_b \neq \emptyset$; the CC case conditions on $\sigma_a \neq \emptyset$ and $\sigma_b \neq \emptyset$.
 

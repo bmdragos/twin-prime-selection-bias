@@ -9,3 +9,5 @@
 4. H. Halberstam and H.-E. Richert, *Sieve Methods*, London Mathematical Society Monographs, Academic Press, London, 1974.
 
 5. J. Friedlander and H. Iwaniec, *Opera de Cribro*, American Mathematical Society Colloquium Publications, vol. 57, American Mathematical Society, Providence, RI, 2010.
+
+6. J. R. Chen, "On the representation of a larger even integer as the sum of a prime and the product of at most two primes," *Scientia Sinica* **16** (1973), 157–176.

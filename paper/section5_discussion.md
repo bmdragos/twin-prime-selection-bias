@@ -38,9 +38,9 @@ The dominant cost at $K = 10^9$ is the sieve itself (100s of 280s total), not th
 
 ## 5.4 Open Questions
 
-**1. Can the conditioning transformation be made explicit?**
+**1. Can the PC-vs-CC bias be predicted from Hardy-Littlewood heuristics?**
 
-The PC-vs-CC difference of $0.0828$ relates to the full conditional difference of $0.107$ through the conditioning on "$b$ composite." A closed-form expression for this transformation would clarify the relationship between the two statistics.
+The full conditional difference of $0.107$ follows from the convergent sum plus equidistribution. The PC-vs-CC composite difference of $0.0828$ additionally depends on the PP/PC/CP/CC proportions, which we measured empirically. Can these proportions (and hence the composite-only bias) be predicted asymptotically from Hardy-Littlewood, without using empirical data as input?
 
 **2. Does the bias extend to other prime patterns?**
 
