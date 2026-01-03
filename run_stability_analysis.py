@@ -73,11 +73,11 @@ def run_window_analysis(K: int, output_dir: Path):
         spf = spf_sieve_parallel(N)
         # parallel_sieve uses 0 as prime sentinel
         prime_flags = (spf == 0)
+        prime_flags[0] = prime_flags[1] = False
     else:
+        # Use prime_flags_upto directly (more memory-efficient than np.arange comparison)
+        prime_flags = prime_flags_upto(N)
         spf = spf_sieve(N)
-        # factorization.spf_sieve uses spf[n] = n for primes
-        prime_flags = (spf == np.arange(N + 1))
-    prime_flags[0] = prime_flags[1] = False
     print(f"  Completed in {time.time() - t0:.1f}s")
     print()
 
