@@ -64,7 +64,7 @@ At $N = 10^9$ among odd $n$ (GPU-accelerated, see `src/experiments/exp_sophie_ge
 
 The empirical difference of $0.272$ matches the predicted $0.273$ to within **0.4%**. (Note: we restrict to odd $n$ because even $n$ are never prime except $n=2$, so including them contaminates the composite baseline.)
 
-**Cousin primes $(n, n+4)$.** Same analysis: $q \mid n$ and $q \mid (n+4)$ implies $q \mid 4$, so only $q = 2$ fails mutual exclusivity. For $6k \pm 1$ candidates: if $n = 6k-1$, then $n+4 = 6k+3 \equiv 0 \pmod 3$ always; if $n = 6k+1$, then $n+4 = 6k+5 \not\equiv 0 \pmod 3$. Since $3 \mid (n+4)$ is determined by residue class (not primality of $n$), the $p=3$ term contributes zero to the *difference*. The sum starts at $p = 5$: $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$.
+**Cousin primes $(n, n+4)$.** Same analysis: $q \mid n$ and $q \mid (n+4)$ implies $q \mid 4$, so only $q = 2$ fails mutual exclusivity. For $6k \pm 1$ candidates: if $n = 6k-1$, then $n+4 = 6k+3 \equiv 0 \pmod 3$ always; if $n = 6k+1$, then $n+4 = 6k+5 \not\equiv 0 \pmod 3$. Since $3 \mid (n+4)$ is determined by residue class (not primality of $n$)—and prime/composite $n$ have the same residue-class mix among $6k \pm 1$—the $p=3$ term contributes zero to the *difference*. The sum starts at $p = 5$: $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$.
 
 At $K = 10^8$ among $6k \pm 1$ candidates (see `src/experiments/exp_cousin_primes_gpu.py`):
 
