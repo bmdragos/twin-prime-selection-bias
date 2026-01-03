@@ -12,12 +12,12 @@ from typing import Dict, Any
 
 from ..primes import prime_flags_upto
 from ..sieve_pairs import compute_all_states, pair_values, STATES
-from ..factorization import spf_sieve, omega, Omega
+from ..factorization import spf_sieve, omega, omega_leq_P, Omega
 from ..metrics import mean_omega, tilt_ratio
 from ..null_models import shuffle_labels, block_shuffle, slot_matched_null
 
 
-def compute_omega_by_state(K: int, P: int) -> Dict[str, Dict[str, np.ndarray]]:
+def compute_omega_by_state(K: int, P: int = None) -> Dict[str, Dict[str, np.ndarray]]:
     """
     Compute omega values for each component partitioned by state.
 
@@ -25,8 +25,8 @@ def compute_omega_by_state(K: int, P: int) -> Dict[str, Dict[str, np.ndarray]]:
     ----------
     K : int
         Number of pairs to analyze.
-    P : int
-        Maximum prime for omega_leq_P (use None for full omega).
+    P : int, optional
+        Maximum prime for omega_leq_P. If None, computes full omega.
 
     Returns
     -------
@@ -44,8 +44,12 @@ def compute_omega_by_state(K: int, P: int) -> Dict[str, Dict[str, np.ndarray]]:
 
     for i in range(K):
         a, b = pair_values(i + 1)
-        omega_a[i] = omega(a, spf)
-        omega_b[i] = omega(b, spf)
+        if P is None:
+            omega_a[i] = omega(a, spf)
+            omega_b[i] = omega(b, spf)
+        else:
+            omega_a[i] = omega_leq_P(a, spf, P)
+            omega_b[i] = omega_leq_P(b, spf, P)
 
     # Partition by state
     result = {}

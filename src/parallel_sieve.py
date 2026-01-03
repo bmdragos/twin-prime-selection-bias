@@ -115,12 +115,13 @@ def prime_flags_parallel(N: int, num_workers: int = None) -> np.ndarray:
     """
     Compute prime flags using parallel sieve.
 
-    A number n > 1 is prime iff spf[n] == n.
+    A number n > 1 is prime iff spf[n] == 0 (the prime sentinel).
     """
     spf = spf_sieve_parallel(N, num_workers)
 
     flags = np.zeros(N + 1, dtype=bool)
-    flags[2:] = (spf[2:] == np.arange(2, N + 1))
+    # spf_sieve_parallel uses 0 as prime sentinel
+    flags[2:] = (spf[2:] == 0)
 
     return flags
 

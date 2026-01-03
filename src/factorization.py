@@ -22,7 +22,13 @@ def spf_sieve(N: int) -> np.ndarray:
     -------
     np.ndarray
         Array where spf[i] is the smallest prime factor of i.
-        spf[0] = 0, spf[1] = 1.
+        spf[0] = 0, spf[1] = 1, and spf[p] = p for primes.
+
+    Note
+    ----
+    This uses the convention spf[p] = p for primes.
+    The parallel_sieve module uses spf[p] = 0 (uint32, memory-efficient).
+    These are NOT interchangeable in omega/omega_leq_P functions.
     """
     spf = np.arange(N + 1, dtype=np.int64)
     spf[0] = 0
@@ -45,7 +51,8 @@ def omega(n: int, spf: np.ndarray) -> int:
     n : int
         Integer to factor.
     spf : np.ndarray
-        Smallest prime factor array.
+        Smallest prime factor array from spf_sieve (uses spf[p]=p for primes).
+        WARNING: Do NOT use with parallel_sieve SPF (uses 0 sentinel).
 
     Returns
     -------
@@ -75,7 +82,8 @@ def omega_leq_P(n: int, spf: np.ndarray, P: int) -> int:
     n : int
         Integer to factor.
     spf : np.ndarray
-        Smallest prime factor array.
+        Smallest prime factor array from spf_sieve (uses spf[p]=p for primes).
+        WARNING: Do NOT use with parallel_sieve SPF (uses 0 sentinel).
     P : int
         Upper bound on primes to count.
 

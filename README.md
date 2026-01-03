@@ -6,7 +6,7 @@ Composites adjacent to primes have systematically higher factor counts than comp
 
 ## The Core Finding
 
-Among twin prime candidates (6k-1, 6k+1), we classify pairs by primality state:
+Among twin prime candidates $(6k-1, 6k+1)$—numbers coprime to 2 and 3—we classify pairs by primality state:
 - **PP** — Both prime (twin primes)
 - **PC** — a prime, b composite
 - **CP** — a composite, b prime
@@ -82,6 +82,7 @@ twin-prime-selection-bias/
 
 ## Technical Details
 
+- **Population**: All analysis is conditioned on 6k±1 candidates (coprime to 2 and 3). Results do not generalize directly to "all composites."
 - **SPF Sieve**: uint32 with 0=prime sentinel (24GB for K=10^9 vs 48GB with int64)
 - **GPU Kernels**: Numba CUDA with unified memory support for Grace Hopper/Blackwell
 - **Aggregation**: GPU-side reduction avoids transferring 8GB omega arrays per P value

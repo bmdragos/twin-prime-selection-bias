@@ -2,6 +2,11 @@
 Logic around pairs (6k-1, 6k+1).
 
 Responsibility: definition of the objects of study.
+
+Note: All analysis is conditioned on the 6k±1 residue classes.
+These are exactly the integers coprime to 2 and 3, and include all
+primes > 3. Results about composites in these classes do NOT generalize
+directly to "all composites" (which would include multiples of 2 and 3).
 """
 
 import numpy as np
