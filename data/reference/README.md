@@ -22,15 +22,33 @@ Key results at p=5,7,11,13:
 - Empirical P(p|b | a prime) matches 1/(p−1) to 6 decimal places
 - Empirical P(p|b | a comp) is lower than naive 1/p (CC suppression)
 
+### sophie_germain/
+Sophie Germain pairs (n, 2n+1) at N = 10^9.
+
+Key results:
+- E[ω(2n+1) | n prime] = 3.083, E[ω(2n+1) | n composite] = 2.825
+- Difference: 0.258 vs predicted 0.273 (5.7% error)
+- Larger error than twin primes suggests heuristic less accurate for non-constant gaps
+
+### cousin_primes/
+Cousin primes (n, n+4) among 6k±1 candidates at K = 10^8.
+
+Key results:
+- E[ω(n+4) | n prime] = 3.024, E[ω(n+4) | n composite] = 2.918
+- Difference: 0.1063 vs predicted 0.1064 (**0.1% error**)
+- Confirms mechanism generalizes to other constant-gap patterns
+
 ## Reproducibility
 
 ```bash
 # On DGX Spark or similar GPU system:
 python -m src.experiments.exp_omega_decomposition_gpu --K 1e9 --save
 python -m src.experiments.exp_per_prime_divisibility --K 1e9 --save
+python -m src.experiments.exp_sophie_germain_gpu --N 1e9 --save
+python -m src.experiments.exp_cousin_primes_gpu --K 1e8 --save
 ```
 
-Runtime: ~11 minutes for omega decomposition, ~5 minutes for per-prime.
+Runtime: ~11 min (omega decomposition), ~5 min (per-prime), ~1 min (Sophie Germain), ~15s (cousin primes).
 
 ## Verification
 

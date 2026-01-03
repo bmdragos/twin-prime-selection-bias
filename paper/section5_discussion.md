@@ -50,23 +50,31 @@ The mutual exclusivity mechanism is not specific to twin primes. For any pair of
 
 This suggests a general principle: **any admissible prime tuple should exhibit the same "neighbor-survival inflates $\omega$" effect with predictable constants**. Demonstrating this across multiple patterns would elevate the result from a twin-prime curiosity to a general phenomenon.
 
-**Sophie Germain pairs $(p, 2p+1)$.** If $q \mid p$ and $q \mid (2p+1)$, then $q \mid (2p+1 - 2p) = 1$, which is impossible. So mutual exclusivity holds, and we predict:
-$$\mathbb{E}[\omega(2p+1) \mid p \text{ prime}] - \mathbb{E}[\omega(2p+1) \mid p \text{ composite}] \approx \sum_{q \geq 3} \frac{1}{q(q-1)} \approx 0.273$$
-(The sum starts at $q = 3$ because $2 \mid (2p+1)$ is impossible when $p$ is odd.)
+**Sophie Germain pairs $(n, 2n+1)$.** If $q \mid n$ and $q \mid (2n+1)$, then $q \mid (2n+1 - 2n) = 1$, which is impossible. So mutual exclusivity holds, and we predict:
+$$\mathbb{E}[\omega(2n+1) \mid n \text{ prime}] - \mathbb{E}[\omega(2n+1) \mid n \text{ composite}] \approx \sum_{q \geq 3} \frac{1}{q(q-1)} \approx 0.273$$
+(The sum starts at $q = 3$ because $2 \mid (2n+1)$ is impossible when $n$ is odd.)
 
-We verified this prediction computationally. For $n \leq 10^7$:
+At $N = 10^9$ (GPU-accelerated, see `src/experiments/exp_sophie_germain_gpu.py`):
 
 | Population | Mean $\omega(2n+1)$ | Sample size |
 |------------|---------------------|-------------|
-| $n$ prime | 2.834 | 664,578 |
-| $n$ composite | 2.566 | 664,578 |
-| **Difference** | **0.268** | — |
+| $n$ prime | 3.083 | 50,847,534 |
+| $n$ composite | 2.825 | 949,152,465 |
+| **Difference** | **0.258** | — |
 
-The empirical difference of $0.268$ matches the predicted $0.273$ to within 2%, confirming that the mechanism generalizes beyond twin primes. (These results are from ad-hoc computations; no scripts are provided in the repository.)
+The empirical difference of $0.258$ shows a 5.7% discrepancy from the predicted $0.273$. This is larger than the $<1\%$ error for twin primes, suggesting the heuristic is less accurate for Sophie Germain pairs—possibly because the linear relationship $2n+1$ introduces correlations not captured by the independent-prime assumption.
 
-**Cousin primes $(p, p+4)$.** Same analysis: $q \mid p$ and $q \mid (p+4)$ implies $q \mid 4$, so only $q = 2$ fails mutual exclusivity. When restricted to $6k \pm 1$ candidates (coprime to 2 and 3), neither member is divisible by 3, so the sum starts at $p = 5$: $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$, the same as for twins.
+**Cousin primes $(n, n+4)$.** Same analysis: $q \mid n$ and $q \mid (n+4)$ implies $q \mid 4$, so only $q = 2$ fails mutual exclusivity. When restricted to $6k \pm 1$ candidates (coprime to 2 and 3), neither member is divisible by 3, so the sum starts at $p = 5$: $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$, the same as for twins.
 
-Empirically, for $n \leq 10^7$ among $6k \pm 1$ candidates: $\mathbb{E}[\omega(n+4) \mid n \text{ prime}] - \mathbb{E}[\omega(n+4) \mid n \text{ composite}] = 0.104$, matching the prediction to within 3%.
+At $K = 10^8$ among $6k \pm 1$ candidates (see `src/experiments/exp_cousin_primes_gpu.py`):
+
+| Population | Mean $\omega(n+4)$ | Sample size |
+|------------|-------------------|-------------|
+| $n$ prime | 3.024 | 31,324,702 |
+| $n$ composite | 2.918 | 168,675,298 |
+| **Difference** | **0.106** | — |
+
+The empirical difference of $0.1063$ matches the predicted $0.1064$ to within **0.1%**—even better than the twin prime result. This confirms the mechanism generalizes to other admissible patterns with constant gap.
 
 **Future directions.** Natural extensions include prime 3-tuples like $(n, n+2, n+6)$ and longer admissible constellations. If the predicted constants match across all tested patterns, it establishes that "conditioning on rare arithmetic structure induces a quantifiable tilt in additive functions"—a principle with potential applications beyond prime tuples.
 
