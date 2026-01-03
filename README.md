@@ -2,17 +2,26 @@
 
 Composites adjacent to primes have systematically higher factor counts than composites in purely composite pairs.
 
-**[Interactive Results](https://bmdragos.github.io/twin-prime-selection-bias/)** | **Key Finding: +2.93% selection bias in omega**
+**[Interactive Results](https://bmdragos.github.io/twin-prime-selection-bias/)** | **Key Finding: +2.93% selection bias in ω**
 
 ## The Core Finding
 
-Among twin prime candidates $(6k-1, 6k+1)$—numbers coprime to 2 and 3—we classify pairs by primality state:
+Let **ω(n)** denote the number of distinct prime factors of n. Among twin prime candidates $(6k-1, 6k+1)$—numbers coprime to 2 and 3—we classify pairs by primality state:
 - **PP** — Both prime (twin primes)
-- **PC** — a prime, b composite
-- **CP** — a composite, b prime
+- **PC** — $a=6k-1$ prime, $b=6k+1$ composite
+- **CP** — $a$ composite, $b$ prime
 - **CC** — Both composite
 
-The composite member of a PC/CP pair has **2.93% more distinct prime factors** than composites in CC pairs. This bias is stable across K=10^7 to K=10^9 pairs.
+**Two key comparisons** (often conflated):
+
+| Comparison | Difference | Relative |
+|------------|------------|----------|
+| PC vs CC composites | +0.083 | **2.93%** |
+| E[ω(b) \| a prime] vs E[ω(b) \| a composite] | +0.1074 | — |
+
+The 2.93% headline compares composite ω-values only (PC vs CC). The 0.1074 difference is the full conditional (includes cases where b is prime, contributing ω=1). Both are predicted by the heuristic sum $\sum_{p≥5} 1/[p(p-1)] = 0.1065$ to within 1%.
+
+**Note**: This is a conditioning/selection effect on composites adjacent to primes, not evidence about twin-prime density or a primality test.
 
 ## What This Studies
 
@@ -40,11 +49,18 @@ Results saved to `data/results/`.
 
 ### DGX Spark (NVIDIA GB10, 128GB unified memory)
 
+**Main selection bias run** (`run_gpu.py`):
 | K | Runtime | Selection Bias |
 |---|---------|----------------|
 | 10^7 | 54s | 2.956% |
 | 10^8 | ~60s | 2.940% |
 | 10^9 | **190s** | 2.933% |
+
+**Omega decomposition** (`exp_omega_decomposition_gpu.py`):
+| K | Runtime | Notes |
+|---|---------|-------|
+| 10^8 | ~1 min | Small vs large prime factors |
+| 10^9 | **11 min** | Dominated by wheel SPF sieve |
 
 GPU-side aggregation provides **6.2x speedup** over CPU-parallel by avoiding 8GB array transfers per P value.
 
@@ -79,6 +95,12 @@ twin-prime-selection-bias/
 ├── config/                   # Experiment parameters
 └── notebooks/                # Interactive exploration
 ```
+
+## Reference Results
+
+Canonical K=10^9 results in `data/reference/` for reproducibility verification.
+
+The paper also reports verification on Sophie Germain pairs (p, 2p+1) and cousin primes (p, p+4)—these were computed ad-hoc and are documented in `paper/section5_discussion.md` only.
 
 ## Technical Details
 
