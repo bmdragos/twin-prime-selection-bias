@@ -6,6 +6,11 @@ GPU-optimized version for DGX Spark.
 
 Predicted shift: sum_{p >= 5} 1/[p(p-1)] ≈ 0.1065 (same as twin primes)
 
+Note on p=3: For n = 6k-1, n+4 = 6k+3 is always divisible by 3.
+For n = 6k+1, n+4 = 6k+5 is never divisible by 3.
+Since 3|n+4 is determined by residue class (not primality of n),
+the p=3 term contributes zero to the DIFFERENCE. The sum starts at p=5.
+
 Usage:
     python -m src.experiments.exp_cousin_primes_gpu --K 1e8 --save
 """

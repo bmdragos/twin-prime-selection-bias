@@ -62,10 +62,11 @@ def compute_sophie_germain_gpu(N: int, verbose: bool = True) -> dict:
         print(f"  Done in {time.time()-t0:.1f}s, {spf.nbytes/1e9:.2f}GB")
 
     # Create arrays of n values and 2n+1 values
+    # Restrict to ODD n only for fair comparison (even n are never prime except n=2)
     t0 = time.time()
     if verbose:
-        print("Creating value arrays...")
-    n_vals = np.arange(2, N + 1, dtype=np.int64)
+        print("Creating value arrays (odd n only)...")
+    n_vals = np.arange(3, N + 1, 2, dtype=np.int64)  # 3, 5, 7, ..., N
     target_vals = 2 * n_vals + 1  # 2n+1
 
     # Identify primes using SPF (0 = prime)

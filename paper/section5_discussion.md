@@ -54,15 +54,15 @@ This suggests a general principle: **any admissible prime tuple should exhibit t
 $$\mathbb{E}[\omega(2n+1) \mid n \text{ prime}] - \mathbb{E}[\omega(2n+1) \mid n \text{ composite}] \approx \sum_{q \geq 3} \frac{1}{q(q-1)} \approx 0.273$$
 (The sum starts at $q = 3$ because $2 \mid (2n+1)$ is impossible when $n$ is odd.)
 
-At $N = 10^9$ (GPU-accelerated, see `src/experiments/exp_sophie_germain_gpu.py`):
+At $N = 10^9$ among odd $n$ (GPU-accelerated, see `src/experiments/exp_sophie_germain_gpu.py`):
 
 | Population | Mean $\omega(2n+1)$ | Sample size |
 |------------|---------------------|-------------|
-| $n$ prime | 3.083 | 50,847,534 |
-| $n$ composite | 2.825 | 949,152,465 |
-| **Difference** | **0.258** | — |
+| $n$ prime | 3.083 | 50,847,533 |
+| $n$ composite (odd) | 2.811 | 449,152,466 |
+| **Difference** | **0.272** | — |
 
-The empirical difference of $0.258$ shows a 5.7% discrepancy from the predicted $0.273$. This is larger than the $<1\%$ error for twin primes, suggesting the heuristic is less accurate for Sophie Germain pairs—possibly because the linear relationship $2n+1$ introduces correlations not captured by the independent-prime assumption.
+The empirical difference of $0.272$ matches the predicted $0.273$ to within **0.4%**. (Note: we restrict to odd $n$ because even $n$ are never prime except $n=2$, so including them contaminates the composite baseline.)
 
 **Cousin primes $(n, n+4)$.** Same analysis: $q \mid n$ and $q \mid (n+4)$ implies $q \mid 4$, so only $q = 2$ fails mutual exclusivity. When restricted to $6k \pm 1$ candidates (coprime to 2 and 3), neither member is divisible by 3, so the sum starts at $p = 5$: $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$, the same as for twins.
 

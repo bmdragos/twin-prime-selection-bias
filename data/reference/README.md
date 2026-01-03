@@ -23,12 +23,12 @@ Key results at p=5,7,11,13:
 - Empirical P(p|b | a comp) is lower than naive 1/p (CC suppression)
 
 ### sophie_germain/
-Sophie Germain pairs (n, 2n+1) at N = 10^9.
+Sophie Germain pairs (n, 2n+1) at N = 10^9, odd n only.
 
 Key results:
-- E[ω(2n+1) | n prime] = 3.083, E[ω(2n+1) | n composite] = 2.825
-- Difference: 0.258 vs predicted 0.273 (5.7% error)
-- Larger error than twin primes suggests heuristic less accurate for non-constant gaps
+- E[ω(2n+1) | n prime] = 3.083, E[ω(2n+1) | n composite] = 2.811
+- Difference: 0.272 vs predicted 0.273 (**0.4% error**)
+- Restricted to odd n (even n are never prime except n=2)
 
 ### cousin_primes/
 Cousin primes (n, n+4) among 6k±1 candidates at K = 10^8.

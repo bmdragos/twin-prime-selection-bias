@@ -51,19 +51,18 @@ def compute_sophie_germain_bias(N: int, verbose: bool = True) -> dict:
         print(f"  Building prime flags up to {N:,}...")
     prime_flags = prime_flags_upto(N)
 
-    # We only consider odd n (since 2n+1 must be odd for Sophie Germain)
-    # Actually, for n even, 2n+1 is odd. For n odd, 2n+1 is also odd.
-    # The standard Sophie Germain definition uses odd primes p.
-    # Let's consider all n >= 2 and compare prime vs composite.
+    # Restrict to ODD n only for fair comparison
+    # Even n are never prime (except n=2), so including them contaminates
+    # the "n composite" baseline with numbers that have different factorization properties.
 
     if verbose:
-        print("  Computing omega values...")
+        print("  Computing omega values (odd n only)...")
 
     # Collect omega(2n+1) for n prime vs n composite
     omega_when_prime = []
     omega_when_composite = []
 
-    for n in range(2, N + 1):
+    for n in range(3, N + 1, 2):  # 3, 5, 7, ..., N
         val = 2 * n + 1
         om = omega(val, spf)
 
