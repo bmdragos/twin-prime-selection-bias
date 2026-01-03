@@ -1,16 +1,16 @@
 # 5. Discussion
 
-## 5.1 Why This Is Not Surprising
+## 5.1 What Is (and Isn't) New Here
 
-The selection bias we observe is, in hindsight, predictable from first principles. The mutual exclusivity of divisibility (Proposition 3.1) is an elementary fact about modular arithmetic, and the resulting bias follows by linearity of expectation. A skeptical reader might reasonably ask: *what is new here?*
+The $1/(p-1)$ factor in Proposition 3.1 is not new—it is the standard sifting density that appears when applying the linear sieve to shifted-prime sets like $\{p + 2 : p \leq x\}$. The formula has been understood since at least Brun's work on twin primes. A skeptical reader might reasonably ask: *what is new here?*
 
 We offer three responses.
 
-**The quantitative match is nontrivial.** While the qualitative direction of the bias (positive) follows from mutual exclusivity, the quantitative match is striking: the convergent sum $\sum 1/[p(p-1)] = 0.1065$ predicts $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}]$ to within $1\%$. This near-exact agreement was not guaranteed a priori.
+**The bridge to additive functions is explicit.** While the local density $1/(p-1)$ is standard, its consequence for additive functions like $\omega$ is typically left implicit. We make the connection explicit: summing the per-prime increments gives a constant $\sum 1/[p(p-1)] = 0.1065$ that predicts the mean shift in $\omega$ to within $1\%$. This is the simplest possible consequence of "one residue class is forbidden when the neighbor is prime," but stating it as a prediction with a constant (rather than vague heuristics) is what allows validation.
 
-**The stability requires explanation.** The bias persists unchanged across five orders of magnitude in $K$ and is stable (or slightly increasing) in tail windows. This rules out transient effects or slowly drifting artifacts. The convergence of the infinite sum explains this stability: almost all contribution comes from primes below 100.
+**The numerical validation is precise.** The prediction $\mathbb{P}(p \mid b \mid a \text{ prime}) = 1/(p-1)$ is confirmed to six decimal places at $K = 10^9$. The mean shift $0.1074$ matches the heuristic $0.1065$ to within $1\%$. This precision rules out alternative explanations and confirms the heuristic independence assumption is essentially correct.
 
-**The baseline ambiguity is instructive.** The effect size changes from 2.93% (vs CC) to 2.50% (vs unconditional) depending on the baseline. This illustrates how conditioning can create statistical artifacts even when the underlying mechanism is simple. Similar ambiguities arise throughout computational number theory.
+**The decomposition separates small and large factors.** The transfer-matrix model naturally predicts $\omega_{\text{small}}$ (the count of small prime factors). Full $\omega$ includes a "large prime cofactor" contribution that requires separate analysis. The decomposition in Section 5.4 cleanly separates these effects: small primes contribute a 4.4% bias, large-prime cofactors cancel $\sim$13% of the absolute gap, yielding the observed 2.93% in full $\omega$.
 
 ## 5.2 Implications for Twin Prime Heuristics
 
@@ -25,6 +25,8 @@ where $C_2 = \prod_{p \geq 3} (1 - 1/(p-1)^2) \approx 0.66$ is the twin prime co
 Our work does not bear directly on this conjecture, but it illuminates the arithmetic structure that underlies it. The same mutual exclusivity that drives the selection bias also appears in the twin prime constant: the factor $(1 - 1/(p-1)^2)$ arises because a twin prime pair must avoid both residue classes $k \equiv \pm 1/6 \pmod{p}$.
 
 **A complementary perspective.** Twin prime heuristics ask: "Given random $k$, what is the probability that both $6k-1$ and $6k+1$ are prime?" Our selection bias asks the inverse question: "Given that $6k-1$ is prime, how does the arithmetic structure of $6k+1$ change?" Both questions reduce to the same local mechanism.
+
+**The parity barrier.** Standard sieves cannot reliably separate integers by the parity of their number of prime factors—this is the classic parity obstruction. Results like Chen's theorem (every sufficiently large even number is the sum of a prime and a product of at most two primes) exist precisely because "prime or almost-prime" is what sieve methods can access without breaking the parity barrier. Our phenomenon lives comfortably within the sieve world: it concerns conditioning and additive functions, not the much harder problem of forcing exact primality in both components of a pair.
 
 ## 5.3 Computational Lessons
 
@@ -42,9 +44,11 @@ The dominant cost at $K = 10^9$ is the sieve itself (100s of 280s total), not th
 
 The full conditional difference of $0.1074$ follows from the convergent sum plus equidistribution. The PC-vs-CC composite difference of $0.0828$ additionally depends on the PP/PC/CP/CC proportions, which we measured empirically. Hardy-Littlewood heuristics predict the asymptotic density of twin primes (PP pairs), and by extension should determine the other state proportions. Experts in sieve theory may already know this derivation; we pose it as a question for readers unfamiliar with the folklore.
 
-**2. Does the bias extend to other prime patterns?**
+**2. Does the bias extend to other admissible patterns?**
 
 The mutual exclusivity mechanism is not specific to twin primes. For any pair of linear forms $(a, b) = (f(k), g(k))$, if $\gcd(f(k) - g(k), p) = 1$ for primes $p$ not dividing the leading coefficients, then the same disjointness holds: the residue classes where $p \mid a$ and $p \mid b$ are distinct.
+
+This suggests a general principle: **any admissible prime tuple should exhibit the same "neighbor-survival inflates $\omega$" effect with predictable constants**. Demonstrating this across multiple patterns would elevate the result from a twin-prime curiosity to a general phenomenon.
 
 **Sophie Germain pairs $(p, 2p+1)$.** If $q \mid p$ and $q \mid (2p+1)$, then $q \mid (2p+1 - 2p) = 1$, which is impossible. So mutual exclusivity holds, and we predict:
 $$\mathbb{E}[\omega(2p+1) \mid p \text{ prime}] - \mathbb{E}[\omega(2p+1) \mid p \text{ composite}] \approx \sum_{q \geq 3} \frac{1}{q(q-1)} \approx 0.273$$
@@ -64,9 +68,11 @@ The empirical difference of $0.268$ matches the predicted $0.273$ to within 2%, 
 
 Empirically, for $n \leq 10^7$: $\mathbb{E}[\omega(p+4) \mid p \text{ prime}] - \mathbb{E}[\omega(n+4) \mid n \text{ composite}] = 0.104$, matching the prediction to within 3%.
 
-**3. What is the distribution of $\omega$ conditional on primality?**
+**Future directions.** Natural extensions include prime 3-tuples like $(n, n+2, n+6)$ and longer admissible constellations. If the predicted constants match across all tested patterns, it establishes that "conditioning on rare arithmetic structure induces a quantifiable tilt in additive functions"—a principle with potential applications beyond prime tuples.
 
-We have computed means. The full distribution of $\omega(b) \mid a$ prime could reveal higher-order structure.
+**3. What is the full distribution of $\omega$ under conditioning?**
+
+The Erdős–Kac theorem states that $\omega(n)$, suitably centered and scaled, is asymptotically normal for random integers. A natural extension asks: does $\omega_{\text{small}}$ remain approximately normal under our conditioning, with a shifted mean? Does the variance shift as the Bernoulli-sum model predicts?
 
 Preliminary analysis at $K = 10^6$ shows that the **variance is also elevated**:
 
@@ -75,11 +81,15 @@ Preliminary analysis at $K = 10^6$ shows that the **variance is also elevated**:
 | PC (composite $b$) | 2.607 | 0.491 |
 | CC (composite $b$) | 2.533 | 0.439 |
 
-The variance for PC composites is 12% higher than for CC composites. This suggests the selection bias affects not just the central tendency but the entire distribution. A full characterization of the conditional distribution remains open.
+The variance for PC composites is 12% higher than for CC composites. This suggests the selection bias affects not just the central tendency but the entire distribution. A full characterization—showing that the conditioned populations satisfy an Erdős–Kac-type law with modified parameters—would turn "a mean bias" into "a full probabilistic law under conditioning."
 
 **4. Decomposition: small primes vs. large prime cofactors**
 
-The full bias decomposes into two competing effects. Let $\sqrt{N} = \sqrt{6K+1}$ be the threshold separating "small" and "large" primes. At $K = 10^9$ (where $\sqrt{N} = 77{,}459$):
+The full bias decomposes into two competing effects. For composites $n \leq N$, at most one prime factor exceeds $\sqrt{N}$, so we have the exact identity (not a heuristic):
+
+$$\omega(n) = \omega_{\text{small}}(n) + \mathbf{1}\{\exists\, p > \sqrt{N} : p \mid n\}$$
+
+At $K = 10^9$ (where $\sqrt{N} = 77{,}459$):
 
 | Component | PC | CC | Difference |
 |-----------|-----|-----|------------|
@@ -87,9 +97,19 @@ The full bias decomposes into two competing effects. Let $\sqrt{N} = \sqrt{6K+1}
 | Has large prime factor $(> \sqrt{N})$ | 67.6% | 68.8% | $-0.012$ |
 | **Full $\omega$** | 2.907 | 2.824 | $+0.083$ |
 
-The small-prime component shows a **4.4% bias**—larger than the 2.93% bias in full $\omega$. The difference arises because CC composites are *more likely* to have a large prime cofactor (68.8% vs 67.6%). This partially offsets the small-prime bias, reducing it by approximately 13%. (Computation time: 11 minutes on DGX Spark, dominated by 10 minutes for wheel SPF sieve generation.)
+(Rows add exactly: $2.231 + 0.676 = 2.907$ and $2.136 + 0.688 = 2.824$.)
 
-**Interpretation.** In PC pairs, the composite $b$ was "hit" by small primes while $a$ (prime) dodged all of them. This means $b$ tends to be built from small factors. In CC pairs, both members became composite, but they could have done so via fewer small factors plus one large prime. The large-prime effect is a "sieve endgame" correction that our per-prime heuristic implicitly captures when summed over all primes, but which is visible when we decompose by factor size.
+The small-prime component shows a **4.4% bias**—larger than the 2.93% bias in full $\omega$. CC composites are *more likely* to have a large prime cofactor (68.8% vs 67.6%), which partially offsets the small-prime advantage. The cancellation fraction is $0.012/0.095 \approx 12.6\%$, i.e., **large primes erase ~13% of the absolute small-prime gap**. (Computation time: 11 minutes on DGX Spark.)
+
+**Smoothness interpretation.** "Has large prime" is equivalent to "not $\sqrt{N}$-smooth." The smoothness rates are:
+- PC composites: $1 - 0.676 = 32.4\%$ are $\sqrt{N}$-smooth
+- CC composites: $1 - 0.688 = 31.2\%$ are $\sqrt{N}$-smooth
+
+PC composites are ~1.2 percentage points more likely to be smooth. This is exactly what the mechanism predicts: more small prime factors → more of the integer's "mass" is accounted for below $\sqrt{N}$ → less room for a large cofactor.
+
+For comparison, the Dickman function gives $\rho(2) = 1 - \ln 2 \approx 0.307$ as the probability that a random integer $n$ is $\sqrt{n}$-smooth. The CC value $1 - 0.688 = 0.312$ is close to this "ambient" rate, while PC is slightly higher (more smooth), as the mechanism predicts.
+
+**The transfer matrix and full $\omega$.** The transfer-matrix model tracks "hits" by primes $p \leq \sqrt{N}$, so it naturally predicts $\omega_{\text{small}}$. To predict full $\omega$, one needs a separate estimate of $\mathbb{P}(\text{large cofactor} \mid \text{state})$—a state-dependent smoothness probability. The decomposition above shows this probability is not independent of $\omega_{\text{small}}$: more small factors correlate with fewer large cofactors. A tighter theoretical treatment would model this coupling explicitly.
 
 ## 5.5 Why This Is Useful
 
@@ -103,11 +123,16 @@ Despite being "not surprising," the selection bias has practical value:
 
 ## 5.6 Conclusion
 
-We have documented a 3% selection bias in the number of distinct prime factors of composite numbers adjacent to primes. The bias:
+We have documented a selection bias in the number of distinct prime factors of composite numbers adjacent to primes. The contribution is not the local density $1/(p-1)$—which is standard sieve theory—but the explicit bridge from local congruence facts to a measurable shift in the additive function $\omega$, validated numerically with high precision.
 
-- Is persistent across three orders of magnitude in sample size
+The bias:
+
+- Is persistent across three orders of magnitude in sample size ($K = 10^7$ to $10^9$)
 - Is stable or slightly increasing in tail windows
 - Admits a first-principles explanation via mutual exclusivity
-- Is quantitatively predicted (to within $1\%$) by an elementary convergent sum, when compared to the correctly-aligned conditional expectation
+- Is quantitatively predicted (to within $1\%$) by the convergent sum $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$
+- Decomposes cleanly: the transfer matrix predicts $\omega_{\text{small}}$, while a separate smoothness analysis explains the large-prime cofactor correction
 
-The phenomenon is simple, the explanation is elementary, and the quantitative agreement is striking. Sometimes the most instructive results are those that confirm what "should" be true---and verify the heuristic to high precision.
+The phenomenon generalizes beyond twin primes to Sophie Germain pairs and cousin primes, with predicted constants matching empirical values. This suggests a general principle: conditioning on rare arithmetic structure (a prime neighbor) induces a quantifiable tilt in additive functions, with the tilt predictable from elementary local densities.
+
+The quantitative agreement is striking. Constants are where vague heuristics either become science or die—and this one survives.

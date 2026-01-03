@@ -36,6 +36,8 @@ $$
 
 *Proof.* Among the $p$ residue classes modulo $p$, exactly one has $p \mid b$. Conditioning on $p \nmid a$ removes one class (the unique class with $p \mid a$), leaving $p - 1$ equally likely classes. Exactly one of these has $p \mid b$. $\square$
 
+**Remark (Sieve-theoretic context).** This $1/(p-1)$ factor is not new—it is the standard "sifting density" that appears in the linear sieve when studying shifted-prime sets like $\{p + 2 : p \leq x\}$. Primes are equidistributed among the $p-1$ nonzero residue classes mod $p$, so removing one class (the one containing a prime neighbor) leaves $1/(p-1)$ probability mass on each remaining class. What we contribute here is not the formula itself, but (1) the explicit connection to an observable shift in $\omega$, and (2) numerical validation to six decimal places.
+
 **Table 3.1: Per-Prime Verification at $K = 10^9$.**
 
 The local mechanism can be verified directly by measuring $\mathbb{P}(p \mid b \mid a \text{ prime})$ for small primes:
@@ -182,12 +184,12 @@ The bias is remarkably stable, decreasing by only $\sim 0.01$ percentage points 
 
 The selection bias admits a clean first-principles explanation:
 
-1. **Exact:** For each $p \geq 5$, conditioning on $p \nmid a$ boosts $\mathbb{P}(p \mid b)$ from $1/p$ to $1/(p-1)$.
+1. **Standard sieve ingredient:** For each $p \geq 5$, conditioning on $p \nmid a$ boosts $\mathbb{P}(p \mid b)$ from $1/p$ to $1/(p-1)$. This is the same local density that appears in shifted-prime sieves.
 
-2. **Heuristic:** Summing the per-prime increments gives $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$.
+2. **Heuristic sum:** Summing the per-prime increments gives $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$.
 
 3. **Empirical verification:** The correctly-aligned conditional difference $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] = 0.1074$ matches the heuristic to within $1\%$.
 
 4. **Derived quantity:** The PC-vs-CC composite comparison ($0.0828$) is smaller because it excludes the prime-$b$ cases, which have $\omega = 1$ and occur with different frequencies depending on whether $a$ is prime.
 
-The independent-prime heuristic, despite its simplicity, accounts for essentially all of the observed effect.
+The contribution is not the $1/(p-1)$ formula—which is standard—but the bridge from local congruence facts to a measurable shift in the additive function $\omega$, validated numerically with high precision.
