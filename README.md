@@ -33,8 +33,8 @@ The mechanism generalizes beyond twin primes. Any admissible prime pair exhibits
 | Sophie Germain $(n, 2n+1)$ | 0.273 | 0.272 | **0.4%** |
 | Cousin primes $(n, n+4)$ | 0.1065 | 0.1063 | **0.1%** |
 
-- **Sophie Germain**: Sum starts at $q=3$ (not 5) since $2 \nmid (2n+1)$ for odd $n$. Verified at $N=10^9$.
-- **Cousin primes**: Same sum as twins. Verified at $K=10^8$ among $6k \pm 1$ candidates.
+- **Sophie Germain**: Sum starts at $q=3$ (not 5) since $2 \nmid (2n+1)$ for any $n$. Verified at $N=10^9$ (odd $n$ only).
+- **Cousin primes**: For $6k \pm 1$ candidates, $3 \mid (n+4)$ depends on residue class, not primality—so $p=3$ contributes zero to the difference. Verified at $K=10^8$.
 
 ## What This Studies
 

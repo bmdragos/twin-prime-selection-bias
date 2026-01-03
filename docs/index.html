@@ -651,13 +651,13 @@
                             $\sum_{q \geq 3} \frac{1}{q(q-1)} = 0.273$
                         </div>
                         <p style="color: var(--text-muted); font-size: 0.9rem;">
-                            Sum starts at $q=3$ (not 5) because $2 \nmid (2n+1)$ for odd $n$.
+                            Sum starts at $q=3$ because $2 \nmid (2n+1)$ for any $n$. Verified at $N=10^9$ (odd $n$ only).
                         </p>
                     </div>
                     <div class="card">
                         <h3>Cousin Primes $(n, n+4)$</h3>
                         <p style="color: var(--text-muted); margin-bottom: 12px;">
-                            For $6k \pm 1$ candidates, neither member is divisible by 2 or 3. Same sum as twins.
+                            For $6k \pm 1$ candidates: $3 \mid (n+4)$ depends on residue class, not primality&mdash;so $p=3$ contributes zero to the difference.
                         </p>
                         <div class="math-block">
                             $\sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065$
@@ -1182,10 +1182,10 @@ k mod 5:    0       1       2       3       4
                             sieve theory may already know this derivation.</li>
                         <li><strong>Does the bias extend to other prime patterns?</strong>
                             <p><em>Sophie Germain pairs $(n, 2n+1)$:</em> If $q \mid n$ and $q \mid (2n+1)$, then $q \mid 1$—impossible.
-                            Predicted shift: $\sum_{q \geq 3} 1/[q(q-1)] = 0.273$ (sum starts at $q=3$ since $2 \nmid (2n+1)$ for odd $n$).
+                            Predicted shift: $\sum_{q \geq 3} 1/[q(q-1)] = 0.273$ (sum starts at $q=3$ since $2 \nmid (2n+1)$ for any $n$).
                             At $N = 10^9$ among odd $n$: empirical difference $= 0.272$, matching to <strong>0.4%</strong>.</p>
-                            <p><em>Cousin primes $(n, n+4)$:</em> For $6k \pm 1$ candidates, predicted shift $= 0.1065$ (same sum as twins).
-                            At $K = 10^8$: empirical difference $= 0.1063$, matching to <strong>0.1%</strong>—even better than twins.</p>
+                            <p><em>Cousin primes $(n, n+4)$:</em> For $6k \pm 1$ candidates, $3 \mid (n+4)$ depends on residue class, not primality—so $p=3$ contributes zero to the difference.
+                            Predicted shift $= 0.1065$. At $K = 10^8$: empirical difference $= 0.1063$, matching to <strong>0.1%</strong>.</p>
                         </li>
                         <li><strong>What is the distribution of $\omega$ conditional on primality?</strong>
                             Preliminary analysis at $K = 10^6$ shows the variance is also elevated: PC composites have
