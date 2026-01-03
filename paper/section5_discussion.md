@@ -87,7 +87,7 @@ The full bias decomposes into two competing effects. Let $\sqrt{N} = \sqrt{6K+1}
 | Has large prime factor $(> \sqrt{N})$ | 67.6% | 68.8% | $-0.012$ |
 | **Full $\omega$** | 2.907 | 2.824 | $+0.083$ |
 
-The small-prime component shows a **4.4% bias**—larger than the 2.93% bias in full $\omega$. The difference arises because CC composites are *more likely* to have a large prime cofactor (68.8% vs 67.6%). This partially offsets the small-prime bias, reducing it by approximately 13%.
+The small-prime component shows a **4.4% bias**—larger than the 2.93% bias in full $\omega$. The difference arises because CC composites are *more likely* to have a large prime cofactor (68.8% vs 67.6%). This partially offsets the small-prime bias, reducing it by approximately 13%. (Computation time: 11 minutes on DGX Spark, dominated by 10 minutes for wheel SPF sieve generation.)
 
 **Interpretation.** In PC pairs, the composite $b$ was "hit" by small primes while $a$ (prime) dodged all of them. This means $b$ tends to be built from small factors. In CC pairs, both members became composite, but they could have done so via fewer small factors plus one large prime. The large-prime effect is a "sieve endgame" correction that our per-prime heuristic implicitly captures when summed over all primes, but which is visible when we decompose by factor size.
 
