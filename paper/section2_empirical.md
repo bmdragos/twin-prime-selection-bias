@@ -19,6 +19,22 @@ For each pair, we classify the **state** according to the primality of each comp
 | CP | $a$ composite, $b$ prime | "Missing twin" on left |
 | CC | Both composite | Neither is prime |
 
+**Figure 2.1: State Classification Matrix.**
+
+```
+                         b = 6k+1
+                    Prime      Composite
+               ┌───────────┬───────────┐
+        Prime  │    PP     │    PC     │
+  a = 6k-1     │(twin prime)│           │
+               ├───────────┼───────────┤
+     Composite │    CP     │    CC     │
+               │           │           │
+               └───────────┴───────────┘
+```
+
+The four states partition all pairs $(6k-1, 6k+1)$ by the primality of each component. Our central question: does the composite in a PC or CP pair differ systematically from the composites in CC pairs?
+
 Our primary observable is $\omega(n)$, the number of **distinct** prime factors of $n$. For prime $n$, we have $\omega(n) = 1$.
 
 ## 2.2 State Distribution

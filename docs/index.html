@@ -1102,12 +1102,29 @@ k mod 5:    0       1       2       3       4
 
                     <h2>5.3 Open Questions</h2>
                     <ol>
-                        <li><strong>Can the conditioning transformation be made explicit?</strong> The PC-vs-CC difference
-                            relates to the full conditional through conditioning on "$b$ composite."</li>
-                        <li><strong>Does the bias extend to other prime patterns?</strong> Sophie Germain pairs and
-                            prime $k$-tuples are natural candidates.</li>
-                        <li><strong>What is the distribution of $\omega$ conditional on primality?</strong> We have
-                            computed means. The full distribution could reveal higher-order structure.</li>
+                        <li><strong>Is the PC-vs-CC bias derivable from Hardy-Littlewood asymptotics?</strong> The full
+                            conditional difference of $0.1074$ follows from the convergent sum plus equidistribution.
+                            The PC-vs-CC difference additionally depends on the PP/PC/CP/CC proportions. Experts in
+                            sieve theory may already know this derivation.</li>
+                        <li><strong>Does the bias extend to other prime patterns?</strong>
+                            <p><em>Sophie Germain pairs $(p, 2p+1)$:</em> Predicted shift $\approx 0.273$. Verified at $n \leq 10^7$:
+                            empirical difference $= 0.268$, matching to within 2%.</p>
+                            <p><em>Cousin primes $(p, p+4)$:</em> Predicted shift $= 0.1065$. Empirically $= 0.104$, matching within 3%.</p>
+                        </li>
+                        <li><strong>What is the distribution of $\omega$ conditional on primality?</strong>
+                            Preliminary analysis at $K = 10^6$ shows the variance is also elevated: PC composites have
+                            12% higher variance than CC composites (0.491 vs 0.439).</li>
+                        <li><strong>Decomposition: small primes vs. large prime cofactors</strong>
+                            <p>The full bias decomposes into two competing effects. At $K = 10^9$ (where $\sqrt{N} = 77{,}459$):</p>
+                            <table class="data-table" style="margin: 16px 0; font-size: 0.9rem;">
+                                <tr><th>Component</th><th>PC</th><th>CC</th><th>Diff</th></tr>
+                                <tr><td>$\omega_{\text{small}}$ (factors $\leq \sqrt{N}$)</td><td>2.231</td><td>2.136</td><td>$+0.095$</td></tr>
+                                <tr><td>Has large prime factor</td><td>67.6%</td><td>68.8%</td><td>$-0.012$</td></tr>
+                                <tr><td><strong>Full $\omega$</strong></td><td>2.907</td><td>2.824</td><td>$+0.083$</td></tr>
+                            </table>
+                            <p>Small-prime bias: <strong>4.4%</strong>, reduced to <strong>2.93%</strong> by large-prime effect (13% reduction).
+                            CC composites are more likely to have a large prime cofactor, partially offsetting the small-prime bias.</p>
+                        </li>
                     </ol>
 
                     <h2>5.4 Why This Is Useful</h2>

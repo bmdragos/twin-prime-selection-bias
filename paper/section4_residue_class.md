@@ -75,7 +75,7 @@ The residue-class model clarifies why different conditioning schemes yield diffe
 
 **Secondary conditional:** For $\mathbb{E}[|\sigma_b| \mid \text{PC}] - \mathbb{E}[|\sigma_b| \mid \text{CC}]$, additional conditioning on "$b$ composite" modifies the expectation. The PC case conditions on $\sigma_a = \emptyset$ and $\sigma_b \neq \emptyset$; the CC case conditions on $\sigma_a \neq \emptyset$ and $\sigma_b \neq \emptyset$.
 
-This additional conditioning explains why the PC-vs-CC difference ($0.0828$) is smaller than the full conditional difference ($0.107$): we are excluding the $\sigma_b = \emptyset$ cases (prime $b$), which have $|\sigma_b| = 0$ and occur with different probabilities depending on $\sigma_a$.
+This additional conditioning explains why the PC-vs-CC difference ($0.0828$) is smaller than the full conditional difference ($0.1074$): we are excluding the $\sigma_b = \emptyset$ cases (prime $b$), which have $|\sigma_b| = 0$ and occur with different probabilities depending on $\sigma_a$.
 
 ## 4.7 Connection to Sieve Theory
 

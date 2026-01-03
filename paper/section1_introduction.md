@@ -4,6 +4,28 @@
 
 Consider the integers of the form $6k \pm 1$ for positive integers $k$. Every prime greater than 3 belongs to one of these two residue classes modulo 6, and the pairs $(6k-1, 6k+1)$ exhaust all twin prime candidates beyond $(3, 5)$.
 
+**Table 1.1: The First Fifteen Pairs.**
+
+| $k$ | $6k-1$ | $6k+1$ | State | Composite factorization |
+|----:|-------:|-------:|:-----:|:------------------------|
+| 1 | 5 | 7 | PP | — |
+| 2 | 11 | 13 | PP | — |
+| 3 | 17 | 19 | PP | — |
+| 4 | 23 | 25 | PC | $25 = 5^2$ |
+| 5 | 29 | 31 | PP | — |
+| 6 | 35 | 37 | CP | $35 = 5 \times 7$ |
+| 7 | 41 | 43 | PP | — |
+| 8 | 47 | 49 | PC | $49 = 7^2$ |
+| 9 | 53 | 55 | PC | $55 = 5 \times 11$ |
+| 10 | 59 | 61 | PP | — |
+| 11 | 65 | 67 | CP | $65 = 5 \times 13$ |
+| 12 | 71 | 73 | PP | — |
+| 13 | 77 | 79 | CP | $77 = 7 \times 11$ |
+| 14 | 83 | 85 | PC | $85 = 5 \times 17$ |
+| 15 | 89 | 91 | PC | $91 = 7 \times 13$ |
+
+The first composites to appear are $5^2$, $5 \times 7$, $7^2$, $5 \times 11$, ...—products of the smallest primes coprime to 6. Each composite in an "isolated prime" pair (PC or CP) is forced to avoid factors that would make its partner composite.
+
 For each such pair, we may ask: if exactly one member is prime, what can we say about the arithmetic structure of the composite partner?
 
 Naively, one might expect the composite to be "generic"---statistically indistinguishable from a random composite of similar size. This paper shows that this expectation is false. Composites adjacent to primes have systematically *more* distinct prime factors than composites in pairs where both members are composite.
@@ -35,11 +57,11 @@ $$
 \sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065
 $$
 
-This predicts $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}]$. Empirically, this difference is $0.107$, matching the prediction to within $1\%$.
+This predicts $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}]$. Empirically, this difference is $0.1074$, matching the prediction to within $1\%$.
 
 ## 1.3 Context
 
-The Hardy-Littlewood conjecture and its refinements predict the density of prime pairs, but the *internal structure* of near-prime pairs has received less attention. Our result complements density predictions with a structural observation: the "near-miss" composites adjacent to primes are arithmetically distinguished.
+The Hardy-Littlewood conjecture and its refinements predict the density of prime pairs, but the *internal structure* of near-prime pairs appears less frequently in the literature. We are not aware of prior work explicitly quantifying this selection bias, though the underlying mechanism (mutual exclusivity of divisibility) is classical and experts in sieve theory may consider the qualitative effect unsurprising. Our contribution is primarily computational: verifying the heuristic prediction to high precision across three orders of magnitude.
 
 Related phenomena include:
 

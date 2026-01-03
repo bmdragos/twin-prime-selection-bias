@@ -8,7 +8,9 @@ At $K = 10^9$ pairs, the mean $\omega$ (distinct prime factors) for PC composite
 
 We derive the bias from first principles. For each prime $p \geq 5$, the congruence classes $k \pmod p$ where $p \mid (6k-1)$ and $p \mid (6k+1)$ are disjoint. This mutual exclusivity implies $\mathbb{P}(p \mid b \mid p \nmid a) = 1/(p-1)$, an exact identity. Under the heuristic that primes are equidistributed among allowed residue classes, this extends to $\mathbb{P}(p \mid b \mid a \text{ prime}) \approx 1/(p-1)$. Summing the per-prime increments yields a convergent sum $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$.
 
-When compared to the correctly-aligned conditional expectation $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] = 0.107$, the heuristic matches empirical data to within $1\%$. The PC-vs-CC composite difference of $0.0828$ is smaller because it further conditions on "$b$ composite," which modifies expectations through elementary conditioning algebra.
+When compared to the correctly-aligned conditional expectation $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] = 0.1074$, the heuristic matches empirical data to within $1\%$. The PC-vs-CC composite difference of $0.0828$ is smaller because it further conditions on "$b$ composite," which modifies expectations through elementary conditioning algebra.
+
+The qualitative effect may be unsurprising to experts in sieve theory; our contribution is the explicit computation verifying the heuristic across $K = 10^7$ to $10^9$.
 
 **Keywords:** twin primes, prime factors, selection bias, Hardy-Littlewood, sieve methods
 

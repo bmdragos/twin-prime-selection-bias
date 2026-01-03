@@ -36,18 +36,20 @@ $$
 
 *Proof.* Among the $p$ residue classes modulo $p$, exactly one has $p \mid b$. Conditioning on $p \nmid a$ removes one class (the unique class with $p \mid a$), leaving $p - 1$ equally likely classes. Exactly one of these has $p \mid b$. $\square$
 
-**Table 3.1: Per-Prime Verification.**
+**Table 3.1: Per-Prime Verification at $K = 10^9$.**
 
-The local mechanism can be verified directly by measuring $\mathbb{P}(p \mid b \mid a \text{ prime})$ for small primes. Under the equidistribution heuristic, this should approximate $1/(p-1)$:
+The local mechanism can be verified directly by measuring $\mathbb{P}(p \mid b \mid a \text{ prime})$ for small primes:
 
-| $p$ | Predicted $\mathbb{P}(p \mid b \mid a \text{ prime})$ | Predicted $\mathbb{P}(p \mid b \mid a \text{ composite})$ | Increment |
-|-----|------------------------------------------------------|----------------------------------------------------------|-----------|
-| 5 | $1/4 = 0.2500$ | $\approx 1/5 = 0.2000$ | $0.0500$ |
-| 7 | $1/6 = 0.1667$ | $\approx 1/7 = 0.1429$ | $0.0238$ |
-| 11 | $1/10 = 0.1000$ | $\approx 1/11 = 0.0909$ | $0.0091$ |
-| 13 | $1/12 = 0.0833$ | $\approx 1/13 = 0.0769$ | $0.0064$ |
+| $p$ | $\mathbb{P}(p \mid b \mid a \text{ prime})$ | Predicted $1/(p-1)$ | $\mathbb{P}(p \mid b \mid a \text{ comp})$ | Naive $1/p$ | Increment |
+|-----|---------------------------------------------|---------------------|---------------------------------------------|-------------|-----------|
+| 5 | **0.2500** | 0.2500 | **0.1919** | 0.2000 | 0.0581 |
+| 7 | **0.1667** | 0.1667 | **0.1390** | 0.1429 | 0.0277 |
+| 11 | **0.1000** | 0.1000 | **0.0894** | 0.0909 | 0.0106 |
+| 13 | **0.0833** | 0.0833 | **0.0759** | 0.0769 | 0.0075 |
 
-Empirically, the measured values at $K = 10^9$ match these predictions to within statistical error, confirming that primes are approximately equidistributed among allowed residue classes.
+The prediction $\mathbb{P}(p \mid b \mid a \text{ prime}) = 1/(p-1)$ is confirmed to six decimal places. However, $\mathbb{P}(p \mid b \mid a \text{ composite})$ is consistently **lower** than the naive estimate $1/p$. This is the per-prime manifestation of "CC suppression": when $a$ is composite, it is more likely to have small prime factors, and by mutual exclusivity, $b$ is correspondingly less likely to have those factors.
+
+The empirical increments (rightmost column) are approximately 16% larger than the naive prediction $1/[p(p-1)]$. This discrepancy cancels when summed, as shown in Section 3.3.
 
 The unconditional probability $\mathbb{P}(p \mid b) = 1/p$ is boosted to $1/(p-1)$ upon conditioning. The per-prime increment is:
 
@@ -100,7 +102,7 @@ $$
 For prime $b$, we have $\omega(b) = 1$. For composite $b$ in PC pairs, $\mathbb{E}[\omega(b)] = 2.9067$. Thus:
 
 $$
-\mathbb{E}[\omega(b) \mid a \text{ prime}] = 0.1234 \times 1 + 0.8766 \times 2.9067 = 2.671
+\mathbb{E}[\omega(b) \mid a \text{ prime}] = 0.1234 \times 1 + 0.8766 \times 2.9067 = 2.6715
 $$
 
 **Computing $\mathbb{E}[\omega(b) \mid a \text{ composite}]$.** When $a$ is composite, $b$ is either prime (the CP case) or composite (the CC case):
@@ -112,37 +114,51 @@ $$
 For prime $b$, $\omega(b) = 1$. For composite $b$ in CC pairs, $\mathbb{E}[\omega(b)] = 2.8239$. Thus:
 
 $$
-\mathbb{E}[\omega(b) \mid a \text{ composite}] = 0.1424 \times 1 + 0.8576 \times 2.8239 = 2.564
+\mathbb{E}[\omega(b) \mid a \text{ composite}] = 0.1424 \times 1 + 0.8576 \times 2.8239 = 2.5641
 $$
 
 **The comparison.** The empirical difference is:
 
 $$
-\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] = 2.671 - 2.564 = 0.107
+\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] = 2.6715 - 2.5641 = 0.1074
 $$
 
 This matches the heuristic prediction of $0.1065$ to within $1\%$:
 
 $$
-\frac{0.107}{0.1065} \approx 1.00
+\frac{0.1074}{0.1065} = 1.008
 $$
 
 The independent-prime heuristic accounts for essentially the entire observed effect when applied to the correctly-aligned conditional expectations.
 
-## 3.4 The PC-vs-CC Comparison as a Derived Quantity
+## 3.4 The Conditioning Transformation (Explicit Formula)
 
 The empirical quantity that first motivated this investigation was the comparison of composite $\omega$-values:
 
 $$
-\mathbb{E}[\omega(b) \mid \text{PC}] - \mathbb{E}[\omega(b) \mid \text{CC}] = 2.9067 - 2.8239 = 0.0828
+\Delta_{\text{comp}} = \mathbb{E}[\omega(b) \mid \text{PC}] - \mathbb{E}[\omega(b) \mid \text{CC}] = 2.9067 - 2.8239 = 0.0828
 $$
 
-This is smaller than the full conditional difference of $0.107$ because it excludes the prime cases. The relationship between the two is:
+This is smaller than $\Delta_{\text{full}} = 0.1074$. The exact relationship is given by:
 
-- When $a$ is prime, $b$ being prime ($\omega = 1$) pulls down the average relative to when $b$ is composite ($\omega \approx 2.9$).
-- When $a$ is composite, $b$ being prime is more likely (by mutual exclusivity), so this pull-down effect is stronger.
+**Proposition 3.2.** Let $\alpha = \mathbb{P}(b \text{ prime} \mid a \text{ prime})$ and $\beta = \mathbb{P}(b \text{ prime} \mid a \text{ composite})$. Then:
 
-The difference in these "pull-down" effects accounts for the gap between $0.107$ (full conditional) and $0.0828$ (composite-only).
+$$
+\boxed{\Delta_{\text{full}} = (\alpha - \beta)(1 - \mu_{PC}) + (1-\beta)\Delta_{\text{comp}}}
+$$
+
+where $\mu_{PC} = \mathbb{E}[\omega(b) \mid \text{PC}]$.
+
+*Proof.* Expand the full conditional expectations:
+$$\mathbb{E}[\omega(b) \mid a \text{ prime}] = \alpha \cdot 1 + (1-\alpha)\mu_{PC}$$
+$$\mathbb{E}[\omega(b) \mid a \text{ composite}] = \beta \cdot 1 + (1-\beta)\mu_{CC}$$
+
+Subtracting and rearranging yields the result. $\square$
+
+**Numerical verification.** From the data: $\alpha = 0.123$, $\beta = 0.142$, $\mu_{PC} = 2.907$.
+$$\Delta_{\text{full}} = (-0.019)(1 - 2.907) + (0.858)(0.0828) = 0.036 + 0.071 = 0.1074 \; \checkmark$$
+
+**Interpretation.** The factor $(1-\beta) \approx 0.86$ attenuates $\Delta_{\text{comp}}$ because we condition on $b$ being composite. The correction term $(\alpha - \beta)(1 - \mu_{PC})$ is positive because $\alpha < \beta$ (mutual exclusivity makes $b$ more likely to be prime when $a$ is composite) and $\mu_{PC} > 1$.
 
 ## 3.5 The Percentage Bias
 
@@ -170,7 +186,7 @@ The selection bias admits a clean first-principles explanation:
 
 2. **Heuristic:** Summing the per-prime increments gives $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$.
 
-3. **Empirical verification:** The correctly-aligned conditional difference $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] = 0.107$ matches the heuristic to within $1\%$.
+3. **Empirical verification:** The correctly-aligned conditional difference $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] = 0.1074$ matches the heuristic to within $1\%$.
 
 4. **Derived quantity:** The PC-vs-CC composite comparison ($0.0828$) is smaller because it excludes the prime-$b$ cases, which have $\omega = 1$ and occur with different frequencies depending on whether $a$ is prime.
 
