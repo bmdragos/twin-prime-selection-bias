@@ -523,9 +523,25 @@
                         </p>
                     </div>
                 </div>
+
+                <div class="card" style="margin-top: 24px; border-left: 4px solid var(--accent);">
+                    <h3>The Mechanism: Mutual Exclusivity</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 12px;">
+                        For any prime $p \geq 5$, the residue classes where $p \mid a$ and $p \mid b$ are <strong>disjoint</strong>.
+                        If both held, then $p \mid (b - a) = 2$, which is impossible for $p \geq 5$.
+                    </p>
+                    <p style="color: var(--text-muted); margin-bottom: 12px;">
+                        This means: conditioning on "$a$ is prime" (so $p \nmid a$ for all $p$) <em>boosts</em> the probability
+                        that $p \mid b$ from $1/p$ to $1/(p-1)$. Sum the increments:
+                    </p>
+                    <div class="math-block">
+                        $\sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065 \approx \text{observed } 0.107$
+                    </div>
+                </div>
             </div>
         </section>
 
+        <!-- EVIDENCE: The bias is real -->
         <section>
             <div class="container">
                 <h2>Bias Stability Across Scale</h2>
@@ -540,19 +556,97 @@
 
         <section>
             <div class="container">
-                <h2>State Distribution</h2>
+                <h2>Why It Stabilizes: Convergence of the Sum</h2>
                 <p class="section-desc">
-                    As K increases, the fraction of prime-containing pairs decreases (primes thin out).
+                    The per-prime increments $1/[p(p-1)]$ form a convergent series. Small primes dominate:
+                    the first 5 primes contribute 87% of the total. Adding more pairs doesn't change the sum.
                 </p>
                 <div class="chart-container">
-                    <div id="chart-distribution" class="chart"></div>
+                    <div id="chart-convergence" class="chart"></div>
                 </div>
             </div>
         </section>
 
         <section>
             <div class="container">
-                <h2>Mean Omega by State</h2>
+                <h2>Window Stability</h2>
+                <p class="section-desc">
+                    Critical test: is the bias stable in the tail, not just in prefix averages?
+                    The bias is <em>slightly higher</em> in the tail, ruling out drift.
+                </p>
+                <div class="chart-container">
+                    <div id="chart-windows" class="chart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- THE PAYOFF: Mechanism is correct -->
+        <section style="background: linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, transparent 100%);">
+            <div class="container">
+                <h2>The Payoff: Generalization Across Patterns</h2>
+                <p class="section-desc">
+                    If the mechanism is correct, it should work for <em>any</em> admissible prime pair&mdash;not just twins.
+                    Three patterns, three predictions, all matching within 1%.
+                </p>
+                <div class="chart-container">
+                    <div id="chart-generalization" class="chart"></div>
+                </div>
+                <div class="grid-2" style="margin-top: 24px;">
+                    <div class="card">
+                        <h3>Sophie Germain Pairs $(n, 2n+1)$</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 12px;">
+                            If $q \mid n$ and $q \mid (2n+1)$, then $q \mid 1$&mdash;impossible. Mutual exclusivity holds for all odd primes.
+                        </p>
+                        <div class="math-block">
+                            $\sum_{q \geq 3} \frac{1}{q(q-1)} = 0.273$
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            Sum starts at $q=3$ because $2 \nmid (2n+1)$ for any $n$. Verified at $N=10^9$ (odd $n$ only).
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3>Cousin Primes $(n, n+4)$</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 12px;">
+                            For $6k \pm 1$ candidates: $3 \mid (n+4)$ depends on residue class, not primality&mdash;so $p=3$ contributes zero to the difference.
+                        </p>
+                        <div class="math-block">
+                            $\sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065$
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            Achieves <strong>0.1%</strong> agreement&mdash;better than twin primes!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEEPER ANALYSIS -->
+        <section>
+            <div class="container">
+                <h2>&omega; Decomposition: Small vs Large Primes</h2>
+                <p class="section-desc">
+                    The full $\omega = \omega_{\text{small}} + \mathbf{1}\{\text{has large prime factor}\}$ decomposes into
+                    competing effects. Large prime cofactors partially cancel the small-prime bias.
+                </p>
+                <div class="chart-container">
+                    <div id="chart-decomposition" class="chart"></div>
+                </div>
+                <div class="card" style="margin-top: 24px;">
+                    <h3>Smoothness Interpretation</h3>
+                    <p style="color: var(--text-muted);">
+                        PC composites are ~1.2 percentage points more likely to be $\sqrt{N}$-smooth (32.4% vs 31.2%).
+                        More small prime factors &rarr; less "room" for a large cofactor. The CC smoothness rate of
+                        31.2% is close to the Dickman function $\rho(2) = 1 - \ln 2 \approx 30.7\%$, the "ambient" rate
+                        for random integers.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFERENCE DATA -->
+        <section>
+            <div class="container">
+                <h2>Reference Data: Mean Omega by State</h2>
                 <p class="section-desc">
                     Comparing mean &omega; across states at K=10<sup>9</sup>. PP pairs have &omega;=1 by definition (primes).
                 </p>
@@ -609,21 +703,9 @@
 
         <section>
             <div class="container">
-                <h2>Window Stability</h2>
-                <p class="section-desc">
-                    Critical test: is the bias stable in the tail, not just in prefix averages?
-                </p>
-                <div class="chart-container">
-                    <div id="chart-windows" class="chart"></div>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <div class="container">
                 <h2>Baseline Comparisons</h2>
                 <p class="section-desc">
-                    Is the bias specific to "PC vs CC" or does it hold against unconditional composites?
+                    The effect size depends on your baseline: +2.93% vs CC composites, +2.50% vs unconditional composites.
                 </p>
                 <div class="chart-container">
                     <div id="chart-baselines" class="chart"></div>
@@ -631,76 +713,15 @@
             </div>
         </section>
 
+        <!-- SUPPLEMENTARY -->
         <section>
             <div class="container">
-                <h2>Generalization Across Patterns</h2>
+                <h2>State Distribution</h2>
                 <p class="section-desc">
-                    The mechanism generalizes beyond twin primes. Any admissible prime pair exhibits the same
-                    "neighbor-survival inflates &omega;" effect with predictable constants.
+                    As K increases, the fraction of prime-containing pairs decreases (primes thin out per the prime number theorem).
                 </p>
                 <div class="chart-container">
-                    <div id="chart-generalization" class="chart"></div>
-                </div>
-                <div class="grid-2" style="margin-top: 24px;">
-                    <div class="card">
-                        <h3>Sophie Germain Pairs $(n, 2n+1)$</h3>
-                        <p style="color: var(--text-muted); margin-bottom: 12px;">
-                            If $q \mid n$ and $q \mid (2n+1)$, then $q \mid 1$&mdash;impossible. Mutual exclusivity holds for all odd primes.
-                        </p>
-                        <div class="math-block">
-                            $\sum_{q \geq 3} \frac{1}{q(q-1)} = 0.273$
-                        </div>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">
-                            Sum starts at $q=3$ because $2 \nmid (2n+1)$ for any $n$. Verified at $N=10^9$ (odd $n$ only).
-                        </p>
-                    </div>
-                    <div class="card">
-                        <h3>Cousin Primes $(n, n+4)$</h3>
-                        <p style="color: var(--text-muted); margin-bottom: 12px;">
-                            For $6k \pm 1$ candidates: $3 \mid (n+4)$ depends on residue class, not primality&mdash;so $p=3$ contributes zero to the difference.
-                        </p>
-                        <div class="math-block">
-                            $\sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065$
-                        </div>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">
-                            Achieves <strong>0.1%</strong> agreement&mdash;better than twin primes!
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <div class="container">
-                <h2>Convergence of the Sum</h2>
-                <p class="section-desc">
-                    The per-prime increments $1/[p(p-1)]$ form a convergent series. Small primes dominate:
-                    the first 5 primes contribute 87% of the total.
-                </p>
-                <div class="chart-container">
-                    <div id="chart-convergence" class="chart"></div>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <div class="container">
-                <h2>&omega; Decomposition</h2>
-                <p class="section-desc">
-                    The full $\omega = \omega_{\text{small}} + \mathbf{1}\{\text{has large prime factor}\}$ decomposes into
-                    competing effects. Large prime cofactors partially cancel the small-prime bias.
-                </p>
-                <div class="chart-container">
-                    <div id="chart-decomposition" class="chart"></div>
-                </div>
-                <div class="card" style="margin-top: 24px;">
-                    <h3>Smoothness Interpretation</h3>
-                    <p style="color: var(--text-muted);">
-                        PC composites are ~1.2 percentage points more likely to be $\sqrt{N}$-smooth (32.4% vs 31.2%).
-                        More small prime factors &rarr; less "room" for a large cofactor. The CC smoothness rate of
-                        31.2% is close to the Dickman function $\rho(2) = 1 - \ln 2 \approx 30.7\%$, the "ambient" rate
-                        for random integers.
-                    </p>
+                    <div id="chart-distribution" class="chart"></div>
                 </div>
             </div>
         </section>
