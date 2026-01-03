@@ -15,8 +15,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-from src.primes import prime_flags_upto
-from src.factorization import spf_sieve
+from src.factorization import spf_sieve_with_flags
 
 try:
     from src.gpu_factorization import (
@@ -75,9 +74,8 @@ def run_window_analysis(K: int, output_dir: Path):
         prime_flags = (spf == 0)
         prime_flags[0] = prime_flags[1] = False
     else:
-        # Use prime_flags_upto directly (more memory-efficient than np.arange comparison)
-        prime_flags = prime_flags_upto(N)
-        spf = spf_sieve(N)
+        # Single pass: get both SPF and flags together
+        spf, prime_flags = spf_sieve_with_flags(N)
     print(f"  Completed in {time.time() - t0:.1f}s")
     print()
 

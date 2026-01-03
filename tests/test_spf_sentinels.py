@@ -10,7 +10,7 @@ These tests prevent regression of the sentinel mismatch bugs found by Codex CLI:
 import numpy as np
 import pytest
 
-from src.factorization import spf_sieve, omega, omega_leq_P
+from src.factorization import spf_sieve, spf_sieve_with_flags, omega, omega_leq_P
 from src.primes import prime_flags_upto
 from src.parallel_sieve import spf_sieve_parallel, prime_flags_parallel
 
@@ -231,6 +231,41 @@ class TestSentinelMismatchPrevention:
 
             # Result is wrong (should be 1, but we get 0 due to n //= 0 → 0)
             assert result != 1, "omega(5) with parallel SPF should give wrong result"
+
+
+class TestSpfSieveWithFlags:
+    """Test the combined SPF + flags helper."""
+
+    def test_returns_correct_spf(self):
+        """SPF from spf_sieve_with_flags matches spf_sieve."""
+        N = 1000
+        spf_combined, _ = spf_sieve_with_flags(N)
+        spf_separate = spf_sieve(N)
+
+        assert np.array_equal(spf_combined, spf_separate)
+
+    def test_returns_correct_flags(self):
+        """Flags from spf_sieve_with_flags match prime_flags_upto."""
+        N = 1000
+        _, flags_combined = spf_sieve_with_flags(N)
+        flags_separate = prime_flags_upto(N)
+
+        assert np.array_equal(flags_combined, flags_separate)
+
+    def test_single_pass_efficiency(self):
+        """Verify we get both outputs from one call."""
+        N = 100
+        spf, flags = spf_sieve_with_flags(N)
+
+        # Check types
+        assert spf.dtype == np.int64
+        assert flags.dtype == bool
+
+        # Check consistency: primes should have spf[p] == p and flags[p] == True
+        for p in SMALL_PRIMES:
+            if p <= N:
+                assert spf[p] == p
+                assert flags[p]
 
 
 class TestCrossValidation:

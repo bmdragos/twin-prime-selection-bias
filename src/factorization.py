@@ -42,6 +42,40 @@ def spf_sieve(N: int) -> np.ndarray:
     return spf
 
 
+def spf_sieve_with_flags(N: int) -> tuple:
+    """
+    Compute SPF and prime flags in a single pass.
+
+    More efficient than running spf_sieve + prime_flags_upto separately.
+
+    Parameters
+    ----------
+    N : int
+        Upper bound (inclusive).
+
+    Returns
+    -------
+    tuple of (spf, prime_flags)
+        spf: Array where spf[i] is the smallest prime factor of i.
+        prime_flags: Boolean array where prime_flags[i] is True iff i is prime.
+    """
+    spf = np.arange(N + 1, dtype=np.int64)
+    spf[0] = 0
+    spf[1] = 1
+
+    for p in range(2, int(N**0.5) + 1):
+        if spf[p] == p:  # p is prime
+            for multiple in range(p * p, N + 1, p):
+                if spf[multiple] == multiple:
+                    spf[multiple] = p
+
+    # Derive prime flags: primes have spf[p] == p (except 0 and 1)
+    prime_flags = (spf == np.arange(N + 1))
+    prime_flags[0] = prime_flags[1] = False
+
+    return spf, prime_flags
+
+
 def omega(n: int, spf: np.ndarray) -> int:
     """
     Count distinct prime factors of n (big omega).
