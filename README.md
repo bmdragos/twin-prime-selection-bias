@@ -98,7 +98,7 @@ twin-prime-selection-bias/
 
 ## Reference Results
 
-Canonical K=10^9 results in `data/reference/` for reproducibility verification.
+Canonical K=10^9 results in [`data/reference/`](data/reference/README.md) for reproducibility verification.
 
 The paper also reports verification on Sophie Germain pairs (p, 2p+1) and cousin primes (p, p+4)—these were computed ad-hoc and are documented in `paper/section5_discussion.md` only.
 

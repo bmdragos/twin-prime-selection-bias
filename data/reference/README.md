@@ -31,3 +31,14 @@ python -m src.experiments.exp_per_prime_divisibility --K 1e9 --save
 ```
 
 Runtime: ~11 minutes for omega decomposition, ~5 minutes for per-prime.
+
+## Verification
+
+Expected file sizes (line counts including header):
+
+| File | Lines |
+|------|-------|
+| `omega_decomposition_K1e9/results.csv` | 17 |
+| `per_prime_K1e9/per_prime_divisibility.csv` | 8 |
+
+Verify with: `wc -l data/reference/*/*.csv`
