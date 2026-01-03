@@ -1407,7 +1407,7 @@ k mod 5:    0       1       2       3       4
                 hovertemplate: 'p = %{x}<br>Sum = %{y:.4f}<extra></extra>'
             },
             {
-                x: [5, 79],
+                x: [0, 85],
                 y: [0.1065, 0.1065],
                 type: 'scatter',
                 mode: 'lines',
@@ -1417,12 +1417,12 @@ k mod 5:    0       1       2       3       4
         ], {
             ...plotlyLayout,
             title: { text: 'Convergence of Sum 1/[p(p-1)] for Twin Primes', font: { size: 16 } },
-            xaxis: { ...plotlyLayout.xaxis, title: 'Prime p', type: 'log' },
+            xaxis: { ...plotlyLayout.xaxis, title: 'Prime p', range: [0, 85] },
             yaxis: { ...plotlyLayout.yaxis, title: 'Cumulative sum', range: [0, 0.12] },
             legend: { orientation: 'h', y: -0.15 },
             annotations: [
-                { x: 5, y: 0.05, text: 'p=5: 47%<br>of total', showarrow: true, arrowhead: 2, ax: 40, ay: -40, font: { size: 10, color: '#888' } },
-                { x: 17, y: 0.093, text: 'First 5 primes:<br>87% of total', showarrow: true, arrowhead: 2, ax: 50, ay: 30, font: { size: 10, color: '#888' } }
+                { x: 12, y: 0.05, text: 'p=5: 47% of total', showarrow: true, arrowhead: 2, ax: 0, ay: -30, font: { size: 11, color: '#888' } },
+                { x: 17, y: 0.093, text: 'First 5 primes: 87% of total', showarrow: true, arrowhead: 2, ax: 60, ay: -20, font: { size: 11, color: '#888' } }
             ]
         }, plotlyConfig);
 
