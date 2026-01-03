@@ -51,7 +51,7 @@ The local mechanism can be verified directly by measuring $\mathbb{P}(p \mid b \
 
 The prediction $\mathbb{P}(p \mid b \mid a \text{ prime}) = 1/(p-1)$ is confirmed to six decimal places. However, $\mathbb{P}(p \mid b \mid a \text{ composite})$ is consistently **lower** than the naive estimate $1/p$. This is the per-prime manifestation of "CC suppression": when $a$ is composite, it is more likely to have small prime factors, and by mutual exclusivity, $b$ is correspondingly less likely to have those factors.
 
-The empirical increments (rightmost column) are approximately 16% larger than the naive prediction $1/[p(p-1)]$. This discrepancy cancels when summed, as shown in Section 3.3.
+The empirical increments (rightmost column) are approximately 16% larger than the naive prediction $1/[p(p-1)]$. This occurs because $\mathbb{P}(p \mid b \mid a \text{ composite}) < 1/p$ (CC suppression), making the actual gap larger than $1/(p-1) - 1/p$. Despite this per-prime discrepancy, the overall sum $\sum 1/[p(p-1)] = 0.1065$ still predicts the mean shift to within $1\%$, because the heuristic correctly captures the dominant effect even if individual terms are approximations.
 
 The unconditional probability $\mathbb{P}(p \mid b) = 1/p$ is boosted to $1/(p-1)$ upon conditioning. The per-prime increment is:
 

@@ -62,11 +62,11 @@ We verified this prediction computationally. For $n \leq 10^7$:
 | $n$ composite | 2.566 | 664,578 |
 | **Difference** | **0.268** | — |
 
-The empirical difference of $0.268$ matches the predicted $0.273$ to within 2%, confirming that the mechanism generalizes beyond twin primes.
+The empirical difference of $0.268$ matches the predicted $0.273$ to within 2%, confirming that the mechanism generalizes beyond twin primes. (These results are from ad-hoc computations; no scripts are provided in the repository.)
 
-**Cousin primes $(p, p+4)$.** Same analysis: $q \mid p$ and $q \mid (p+4)$ implies $q \mid 4$, so only $q = 2$ fails mutual exclusivity. The predicted shift is the same as for twins: $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$.
+**Cousin primes $(p, p+4)$.** Same analysis: $q \mid p$ and $q \mid (p+4)$ implies $q \mid 4$, so only $q = 2$ fails mutual exclusivity. When restricted to $6k \pm 1$ candidates (coprime to 2 and 3), neither member is divisible by 3, so the sum starts at $p = 5$: $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$, the same as for twins.
 
-Empirically, for $n \leq 10^7$: $\mathbb{E}[\omega(p+4) \mid p \text{ prime}] - \mathbb{E}[\omega(n+4) \mid n \text{ composite}] = 0.104$, matching the prediction to within 3%.
+Empirically, for $n \leq 10^7$ among $6k \pm 1$ candidates: $\mathbb{E}[\omega(n+4) \mid n \text{ prime}] - \mathbb{E}[\omega(n+4) \mid n \text{ composite}] = 0.104$, matching the prediction to within 3%.
 
 **Future directions.** Natural extensions include prime 3-tuples like $(n, n+2, n+6)$ and longer admissible constellations. If the predicted constants match across all tested patterns, it establishes that "conditioning on rare arithmetic structure induces a quantifiable tilt in additive functions"—a principle with potential applications beyond prime tuples.
 
@@ -115,7 +115,7 @@ For comparison, the Dickman function gives $\rho(2) = 1 - \ln 2 \approx 0.307$ a
 
 Despite being "not surprising," the selection bias has practical value:
 
-**For prime-testing heuristics.** If one member of a twin-candidate pair is known to be prime, the composite partner is slightly more likely to have many small factors. This could inform probabilistic primality tests that use trial division.
+**As a niche observation for sieve practitioners.** If one member of a twin-candidate pair is known to be prime, the composite partner is slightly more likely to have many small factors. The effect size (~3%) is too small to be practically useful for primality testing, but it illustrates how conditioning propagates through arithmetic structure.
 
 **For understanding conditioned populations.** The bias is a clean example of how conditioning on one variable (primality of $a$) affects the distribution of a related variable (prime factors of $b$). Similar selection effects appear throughout statistics and machine learning.
 
@@ -127,7 +127,7 @@ We have documented a selection bias in the number of distinct prime factors of c
 
 The bias:
 
-- Is persistent across three orders of magnitude in sample size ($K = 10^7$ to $10^9$)
+- Is persistent across two orders of magnitude in sample size ($K = 10^7$ to $10^9$)
 - Is stable or slightly increasing in tail windows
 - Admits a first-principles explanation via mutual exclusivity
 - Is quantitatively predicted (to within $1\%$) by the convergent sum $\sum_{p \geq 5} 1/[p(p-1)] = 0.1065$

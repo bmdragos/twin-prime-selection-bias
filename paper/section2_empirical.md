@@ -122,23 +122,29 @@ The bias is stable across five orders of magnitude within a single run.
 
 ## 2.6 Baseline Consistency Check
 
-We verified internal consistency by checking that the unconditional mean can be reconstructed as a mixture of conditional means.
+We verified internal consistency by checking that the mean over all composite $b$ values can be reconstructed as a mixture of conditional means.
 
-Let $\pi = \mathbb{P}(a \text{ is prime}) \approx 0.14$ at $K = 10^9$. Then a composite at position $6k+1$ is either:
+A composite at position $b = 6k+1$ is either:
 - the $b$ in a PC pair (when $a$ is prime), or
 - the $b$ in a CC pair (when $a$ is composite).
+
+The correct weight is $\mathbb{P}(a \text{ prime} \mid b \text{ composite}) = N_{PC}/(N_{PC} + N_{CC})$. At $K = 10^9$:
+
+$$
+\frac{N_{PC}}{N_{PC} + N_{CC}} = \frac{122{,}531{,}277}{122{,}531{,}277 + 737{,}699{,}041} = 0.1424
+$$
 
 The mixture prediction is:
 
 $$
-\mathbb{E}[\omega \mid b \text{ composite}] = \pi \cdot \mathbb{E}[\omega \mid \text{PC}] + (1 - \pi) \cdot \mathbb{E}[\omega \mid \text{CC}]
+\mathbb{E}[\omega(b) \mid b \text{ composite}] = 0.1424 \cdot \mu_{PC} + 0.8576 \cdot \mu_{CC}
 $$
 
 $$
-= 0.14 \times 2.9067 + 0.86 \times 2.8239 = 2.8354
+= 0.1424 \times 2.9067 + 0.8576 \times 2.8239 = 2.8357
 $$
 
-The observed unconditional mean is $2.8357$, matching within $3 \times 10^{-4}$—consistent with rounding of the reported means. This confirms that our conditional means are mutually consistent and that no systematic errors have been introduced.
+The observed mean over all composite $b$ values is $2.8357$, matching exactly. This confirms that our conditional means are mutually consistent.
 
 ## 2.7 Decomposition of the Bias
 
@@ -175,7 +181,7 @@ The empirical facts are:
 
 1. **A persistent bias exists.** Composites adjacent to primes have $\approx 3\%$ more distinct prime factors than composites in CC pairs.
 
-2. **The bias is stable.** It persists across three orders of magnitude in $K$ and is stable (or slightly increasing) in tail windows.
+2. **The bias is stable.** It persists across two orders of magnitude in $K$ ($10^7$ to $10^9$) and is stable (or slightly increasing) in tail windows.
 
 3. **Multiple baselines confirm it.** The effect holds whether comparing to CC composites ($+2.93\%$) or to unconditional composites ($+2.50\%$).
 

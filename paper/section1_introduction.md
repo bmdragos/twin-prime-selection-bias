@@ -61,7 +61,7 @@ This predicts $\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b)
 
 ## 1.3 Context
 
-The Hardy-Littlewood conjecture and its refinements predict the density of prime pairs, but the *internal structure* of near-prime pairs appears less frequently in the literature. We are not aware of prior work explicitly quantifying this selection bias, though the underlying mechanism (mutual exclusivity of divisibility) is classical and experts in sieve theory may consider the qualitative effect unsurprising. Our contribution is primarily computational: verifying the heuristic prediction to high precision across three orders of magnitude.
+The Hardy-Littlewood conjecture and its refinements predict the density of prime pairs, but the *internal structure* of near-prime pairs appears less frequently in the literature. We are not aware of prior work explicitly quantifying this selection bias, though the underlying mechanism (mutual exclusivity of divisibility) is classical and experts in sieve theory may consider the qualitative effect unsurprising. Our contribution is primarily computational: verifying the heuristic prediction to high precision across two orders of magnitude ($K = 10^7$ to $10^9$).
 
 Related phenomena include:
 
