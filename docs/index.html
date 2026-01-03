@@ -630,6 +630,80 @@
                 </div>
             </div>
         </section>
+
+        <section>
+            <div class="container">
+                <h2>Generalization Across Patterns</h2>
+                <p class="section-desc">
+                    The mechanism generalizes beyond twin primes. Any admissible prime pair exhibits the same
+                    "neighbor-survival inflates &omega;" effect with predictable constants.
+                </p>
+                <div class="chart-container">
+                    <div id="chart-generalization" class="chart"></div>
+                </div>
+                <div class="grid-2" style="margin-top: 24px;">
+                    <div class="card">
+                        <h3>Sophie Germain Pairs $(n, 2n+1)$</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 12px;">
+                            If $q \mid n$ and $q \mid (2n+1)$, then $q \mid 1$&mdash;impossible. Mutual exclusivity holds for all odd primes.
+                        </p>
+                        <div class="math-block">
+                            $\sum_{q \geq 3} \frac{1}{q(q-1)} = 0.273$
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            Sum starts at $q=3$ (not 5) because $2 \nmid (2n+1)$ for odd $n$.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3>Cousin Primes $(n, n+4)$</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 12px;">
+                            For $6k \pm 1$ candidates, neither member is divisible by 2 or 3. Same sum as twins.
+                        </p>
+                        <div class="math-block">
+                            $\sum_{p \geq 5} \frac{1}{p(p-1)} = 0.1065$
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">
+                            Achieves <strong>0.1%</strong> agreement&mdash;better than twin primes!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container">
+                <h2>Convergence of the Sum</h2>
+                <p class="section-desc">
+                    The per-prime increments $1/[p(p-1)]$ form a convergent series. Small primes dominate:
+                    the first 5 primes contribute 87% of the total.
+                </p>
+                <div class="chart-container">
+                    <div id="chart-convergence" class="chart"></div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container">
+                <h2>&omega; Decomposition</h2>
+                <p class="section-desc">
+                    The full $\omega = \omega_{\text{small}} + \mathbf{1}\{\text{has large prime factor}\}$ decomposes into
+                    competing effects. Large prime cofactors partially cancel the small-prime bias.
+                </p>
+                <div class="chart-container">
+                    <div id="chart-decomposition" class="chart"></div>
+                </div>
+                <div class="card" style="margin-top: 24px;">
+                    <h3>Smoothness Interpretation</h3>
+                    <p style="color: var(--text-muted);">
+                        PC composites are ~1.2 percentage points more likely to be $\sqrt{N}$-smooth (32.4% vs 31.2%).
+                        More small prime factors &rarr; less "room" for a large cofactor. The CC smoothness rate of
+                        31.2% is close to the Dickman function $\rho(2) = 1 - \ln 2 \approx 30.7\%$, the "ambient" rate
+                        for random integers.
+                    </p>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- Paper Section -->
@@ -660,8 +734,8 @@
                         </p>
                         <p>
                             At $K = 10^9$ pairs, the mean $\omega$ (distinct prime factors) for PC composites is $2.907$ versus
-                            $2.824$ for CC composites, a relative uplift of $2.93\%$. This bias is stable across three orders of
-                            magnitude in $K$ and persists (slightly elevated) in tail windows, ruling out transient or drifting artifacts.
+                            $2.824$ for CC composites, a relative uplift of $2.93\%$. This bias is stable across two orders of
+                            magnitude in $K$ ($10^7$ to $10^9$) and persists (slightly elevated) in tail windows, ruling out transient or drifting artifacts.
                         </p>
                         <p>
                             We derive the bias from first principles. For each prime $p \geq 5$, the congruence classes
@@ -1107,9 +1181,11 @@ k mod 5:    0       1       2       3       4
                             The PC-vs-CC difference additionally depends on the PP/PC/CP/CC proportions. Experts in
                             sieve theory may already know this derivation.</li>
                         <li><strong>Does the bias extend to other prime patterns?</strong>
-                            <p><em>Sophie Germain pairs $(p, 2p+1)$:</em> Predicted shift $\approx 0.273$. Verified at $n \leq 10^7$:
-                            empirical difference $= 0.268$, matching to within 2%.</p>
-                            <p><em>Cousin primes $(p, p+4)$:</em> Predicted shift $= 0.1065$. Empirically $= 0.104$, matching within 3%.</p>
+                            <p><em>Sophie Germain pairs $(n, 2n+1)$:</em> If $q \mid n$ and $q \mid (2n+1)$, then $q \mid 1$—impossible.
+                            Predicted shift: $\sum_{q \geq 3} 1/[q(q-1)] = 0.273$ (sum starts at $q=3$ since $2 \nmid (2n+1)$ for odd $n$).
+                            At $N = 10^9$ among odd $n$: empirical difference $= 0.272$, matching to <strong>0.4%</strong>.</p>
+                            <p><em>Cousin primes $(n, n+4)$:</em> For $6k \pm 1$ candidates, predicted shift $= 0.1065$ (same sum as twins).
+                            At $K = 10^8$: empirical difference $= 0.1063$, matching to <strong>0.1%</strong>—even better than twins.</p>
                         </li>
                         <li><strong>What is the distribution of $\omega$ conditional on primality?</strong>
                             Preliminary analysis at $K = 10^6$ shows the variance is also elevated: PC composites have
@@ -1274,6 +1350,112 @@ k mod 5:    0       1       2       3       4
             title: { text: 'Mean Omega by Population (K=10^9)', font: { size: 16 } },
             xaxis: { ...plotlyLayout.xaxis, title: 'Population' },
             yaxis: { ...plotlyLayout.yaxis, title: 'Mean omega', range: [2.75, 2.95] }
+        }, plotlyConfig);
+
+        // Chart 6: Generalization Across Patterns
+        Plotly.newPlot('chart-generalization', [
+            {
+                x: ['Twin Primes<br>(6k-1, 6k+1)', 'Sophie Germain<br>(n, 2n+1)', 'Cousin Primes<br>(n, n+4)'],
+                y: [0.1065, 0.273, 0.1065],
+                name: 'Predicted',
+                type: 'bar',
+                marker: { color: 'rgba(59, 130, 246, 0.7)', line: { color: '#3b82f6', width: 2 } },
+                text: ['0.1065', '0.273', '0.1065'],
+                textposition: 'outside'
+            },
+            {
+                x: ['Twin Primes<br>(6k-1, 6k+1)', 'Sophie Germain<br>(n, 2n+1)', 'Cousin Primes<br>(n, n+4)'],
+                y: [0.1074, 0.272, 0.1063],
+                name: 'Empirical',
+                type: 'bar',
+                marker: { color: 'rgba(34, 197, 94, 0.7)', line: { color: '#22c55e', width: 2 } },
+                text: ['0.1074', '0.272', '0.1063'],
+                textposition: 'outside'
+            }
+        ], {
+            ...plotlyLayout,
+            title: { text: 'Predicted vs Empirical Bias Across Prime Patterns', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: '' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'E[omega | prime] - E[omega | composite]', range: [0, 0.32] },
+            barmode: 'group',
+            legend: { orientation: 'h', y: 1.1 },
+            annotations: [
+                { x: 'Twin Primes<br>(6k-1, 6k+1)', y: 0.115, text: '0.8% error', showarrow: false, font: { size: 11, color: '#888' } },
+                { x: 'Sophie Germain<br>(n, 2n+1)', y: 0.29, text: '0.4% error', showarrow: false, font: { size: 11, color: '#888' } },
+                { x: 'Cousin Primes<br>(n, n+4)', y: 0.115, text: '0.1% error', showarrow: false, font: { size: 11, color: '#888' } }
+            ]
+        }, plotlyConfig);
+
+        // Chart 7: Convergence of Sum
+        const primes = [5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79];
+        const cumSum = [];
+        let runningSum = 0;
+        primes.forEach(p => {
+            runningSum += 1 / (p * (p - 1));
+            cumSum.push(runningSum);
+        });
+
+        Plotly.newPlot('chart-convergence', [
+            {
+                x: primes,
+                y: cumSum,
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: { size: 8, color: '#3b82f6' },
+                line: { width: 2, color: '#3b82f6' },
+                name: 'Cumulative sum',
+                hovertemplate: 'p = %{x}<br>Sum = %{y:.4f}<extra></extra>'
+            },
+            {
+                x: [5, 79],
+                y: [0.1065, 0.1065],
+                type: 'scatter',
+                mode: 'lines',
+                line: { width: 2, color: '#22c55e', dash: 'dash' },
+                name: 'Limit = 0.1065'
+            }
+        ], {
+            ...plotlyLayout,
+            title: { text: 'Convergence of Sum 1/[p(p-1)] for Twin Primes', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: 'Prime p', type: 'log' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Cumulative sum', range: [0, 0.12] },
+            legend: { orientation: 'h', y: -0.15 },
+            annotations: [
+                { x: 5, y: 0.05, text: 'p=5: 47%<br>of total', showarrow: true, arrowhead: 2, ax: 40, ay: -40, font: { size: 10, color: '#888' } },
+                { x: 17, y: 0.093, text: 'First 5 primes:<br>87% of total', showarrow: true, arrowhead: 2, ax: 50, ay: 30, font: { size: 10, color: '#888' } }
+            ]
+        }, plotlyConfig);
+
+        // Chart 8: Omega Decomposition
+        Plotly.newPlot('chart-decomposition', [
+            {
+                x: ['PC composites', 'CC composites'],
+                y: [2.231, 2.136],
+                name: 'omega_small (factors <= sqrt(N))',
+                type: 'bar',
+                marker: { color: '#3b82f6' }
+            },
+            {
+                x: ['PC composites', 'CC composites'],
+                y: [0.676, 0.688],
+                name: 'Large prime indicator',
+                type: 'bar',
+                marker: { color: '#8b5cf6' }
+            }
+        ], {
+            ...plotlyLayout,
+            title: { text: 'Omega Decomposition at K=10^9', font: { size: 16 } },
+            xaxis: { ...plotlyLayout.xaxis, title: '' },
+            yaxis: { ...plotlyLayout.yaxis, title: 'Value' },
+            barmode: 'stack',
+            legend: { orientation: 'h', y: -0.15 },
+            annotations: [
+                { x: 'PC composites', y: 2.95, text: 'Total: 2.907', showarrow: false, font: { size: 12, color: '#e5e5e5' } },
+                { x: 'CC composites', y: 2.87, text: 'Total: 2.824', showarrow: false, font: { size: 12, color: '#e5e5e5' } },
+                { x: 0.5, y: 1.5, text: 'Small-prime bias: +4.4%<br>Large-prime offset: -13%<br>Net: +2.93%',
+                  showarrow: false, font: { size: 11, color: '#888' }, align: 'left',
+                  xanchor: 'center', bgcolor: 'rgba(30,30,30,0.9)', borderpad: 8 }
+            ]
         }, plotlyConfig);
     </script>
 </body>
