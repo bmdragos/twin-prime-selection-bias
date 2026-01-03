@@ -23,6 +23,19 @@ The 2.93% headline compares composite ω-values only (PC vs CC). The 0.1074 diff
 
 **Note**: This is a conditioning/selection effect on composites adjacent to primes, not evidence about twin-prime density or a primality test.
 
+## Generalization to Other Patterns
+
+The mechanism generalizes beyond twin primes. Any admissible prime pair exhibits the same bias:
+
+| Pattern | Predicted | Empirical | Error |
+|---------|-----------|-----------|-------|
+| Twin primes $(6k-1, 6k+1)$ | 0.1065 | 0.1074 | 0.8% |
+| Sophie Germain $(n, 2n+1)$ | 0.273 | 0.272 | **0.4%** |
+| Cousin primes $(n, n+4)$ | 0.1065 | 0.1063 | **0.1%** |
+
+- **Sophie Germain**: Sum starts at $q=3$ (not 5) since $2 \nmid (2n+1)$ for odd $n$. Verified at $N=10^9$.
+- **Cousin primes**: Same sum as twins. Verified at $K=10^8$ among $6k \pm 1$ candidates.
+
 ## What This Studies
 
 We develop a transfer-matrix model that predicts this bias from first principles, treating the action of each prime p >= 5 as a Markov transition on pair states. The model produces quantitative predictions for:
@@ -89,7 +102,11 @@ twin-prime-selection-bias/
 │   ├── factorization.py      # SPF sieve, omega functions
 │   ├── transfer_matrix.py    # Mean-field Markov model
 │   ├── coefficient_extraction.py  # Model predictions
-│   └── experiments/          # Individual experiments
+│   └── experiments/
+│       ├── exp_omega_decomposition_gpu.py  # Small vs large prime decomposition
+│       ├── exp_sophie_germain_gpu.py       # Sophie Germain verification
+│       ├── exp_cousin_primes_gpu.py        # Cousin primes verification
+│       └── exp_per_prime_divisibility.py   # Per-prime 1/(p-1) verification
 ├── docs/                     # GitHub Pages site
 ├── dgx-spark/                # Container setup for DGX
 ├── config/                   # Experiment parameters
@@ -98,9 +115,22 @@ twin-prime-selection-bias/
 
 ## Reference Results
 
-Canonical K=10^9 results in [`data/reference/`](data/reference/README.md) for reproducibility verification.
+Canonical results in [`data/reference/`](data/reference/README.md) for reproducibility verification:
 
-The paper also reports verification on Sophie Germain pairs (p, 2p+1) and cousin primes (p, p+4)—these were computed ad-hoc and are documented in `paper/section5_discussion.md` only.
+| Experiment | Scale | Key Result |
+|------------|-------|------------|
+| Twin primes (omega decomposition) | K=10^9 | PC vs CC: +2.93% bias |
+| Sophie Germain $(n, 2n+1)$ | N=10^9 | 0.272 vs predicted 0.273 |
+| Cousin primes $(n, n+4)$ | K=10^8 | 0.1063 vs predicted 0.1065 |
+| Per-prime divisibility | K=10^9 | P(p\|b \| a prime) = 1/(p-1) to 6 decimal places |
+
+Reproduce with:
+```bash
+python -m src.experiments.exp_omega_decomposition_gpu --K 1e9
+python -m src.experiments.exp_sophie_germain_gpu --N 1e9
+python -m src.experiments.exp_cousin_primes_gpu --K 1e8
+python -m src.experiments.exp_per_prime_divisibility --K 1e9
+```
 
 ## Technical Details
 
