@@ -40,6 +40,7 @@ env/
 data/intermediate/
 data/results/
 *.csv
+!data/reference/**/*.csv
 *.pkl
 *.npy
 
@@ -54,3 +55,4 @@ data/results/
 # Temporary
 /tmp/
 *.tar.gz
+/.lake

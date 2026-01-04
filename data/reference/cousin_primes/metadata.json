@@ -1,0 +1,29 @@
+{
+  "pattern": "Cousin primes",
+  "pattern_definition": "(n, n+4) for n in {6k-1, 6k+1}, k in [1, K]",
+  "candidate_domain": "6k±1 wheel (coprime to 2 and 3)",
+  "K": 100000000,
+  "n_pairs": 200000000,
+  "n_prime": 31324702,
+  "n_composite": 168675298,
+  "primes_tested": [3, 5, 7, 11, 13],
+  "prediction_formula": "P(p|n+4 | n prime) = 1/(p-1) for p >= 5",
+  "mechanism": "Mutual exclusivity: if p|n and p|(n+4), then p|4, impossible for p>=5",
+  "p3_note": "For p=3: divisibility of n+4 is residue-class determined, not primality-dependent. If n=6k-1, then n+4≡0 (mod 3) always. If n=6k+1, then n+4≡2 (mod 3) never. The p=3 increment is ~0.",
+  "predicted_sum": "Σ_{p>=5} 1/[p(p-1)] ≈ 0.1065",
+  "scaled_residual_definition": "ε_p = (p-1) × P̂(p|b | first prime) - 1 (for p >= 5)",
+  "z_score_definition": "z = (observed - predicted) / SE, where SE = sqrt(p̂(1-p̂)/n)",
+  "z_score_note": "Binomial SE is a conservative yardstick, not a faithful null distribution for deterministic enumeration",
+  "run_timestamp": "2026-01-04T01:08:00Z",
+  "git_hash": "c0bc85e3cac398d37253da1826f694826e660cf2",
+  "hardware": {
+    "gpu": "NVIDIA GB10 (Grace Hopper)",
+    "compute_capability": "12.1",
+    "system": "DGX Spark"
+  },
+  "software": {
+    "python": "3.12",
+    "cuda": "12.x",
+    "container": "nvcr.io/nvidia/pytorch:25.12-py3"
+  }
+}

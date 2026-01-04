@@ -1,0 +1,29 @@
+{
+  "pattern": "Sophie Germain primes",
+  "pattern_definition": "(n, 2n+1) for odd n in [3, N]",
+  "candidate_domain": "Odd integers (coprime to 2)",
+  "N": 1000000000,
+  "n_pairs": 499999999,
+  "n_prime": 50847533,
+  "n_composite": 449152466,
+  "primes_tested": [3, 5, 7, 11, 13],
+  "prediction_formula": "P(p|2n+1 | n prime) = 1/(p-1) for all p >= 3",
+  "mechanism": "Mutual exclusivity: if p|n and p|(2n+1), then p|1, impossible for all p",
+  "note": "Unlike twin primes, mutual exclusivity holds for ALL primes including p=3",
+  "predicted_sum": "Σ_{p>=3} 1/[p(p-1)] ≈ 0.2560",
+  "scaled_residual_definition": "ε_p = (p-1) × P̂(p|b | first prime) - 1",
+  "z_score_definition": "z = (observed - predicted) / SE, where SE = sqrt(p̂(1-p̂)/n)",
+  "z_score_note": "Binomial SE is a conservative yardstick, not a faithful null distribution for deterministic enumeration",
+  "run_timestamp": "2026-01-04T01:10:00Z",
+  "git_hash": "c0bc85e3cac398d37253da1826f694826e660cf2",
+  "hardware": {
+    "gpu": "NVIDIA GB10 (Grace Hopper)",
+    "compute_capability": "12.1",
+    "system": "DGX Spark"
+  },
+  "software": {
+    "python": "3.12",
+    "cuda": "12.x",
+    "container": "nvcr.io/nvidia/pytorch:25.12-py3"
+  }
+}

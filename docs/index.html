@@ -579,6 +579,25 @@
             </div>
         </section>
 
+        <!-- MECHANISM CONFIRMED: epsilon_p vs p -->
+        <section style="background: linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, transparent 100%);">
+            <div class="container">
+                <h2>Mechanism Confirmed: $\varepsilon_p$ vs Prime $p$</h2>
+                <p class="section-desc">
+                    The scaled residual $\varepsilon_p = (p-1) \cdot \hat{P}(p|b|a\text{ prime}) - 1$ measures deviation from
+                    the predicted density $1/(p-1)$. If the model is correct, $\varepsilon_p \approx 0$ for all primes.
+                </p>
+                <div style="margin-top: 24px; text-align: center;">
+                    <img src="epsilon_vs_p.png" alt="Epsilon vs p verification" style="width: 100%; max-width: 900px; border-radius: 8px; border: 1px solid var(--border);">
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 12px;">
+                        All 166 primes from 5 to 997 cluster around $\varepsilon_p = 0$ (K = 10<sup>8</sup>).
+                        Mean = $-3.7 \times 10^{-4}$, Std = $2.8 \times 10^{-3}$.
+                        <strong>The local density model holds across all tested primes.</strong>
+                    </p>
+                </div>
+            </div>
+        </section>
+
         <!-- EVIDENCE: The bias is real -->
         <section>
             <div class="container">

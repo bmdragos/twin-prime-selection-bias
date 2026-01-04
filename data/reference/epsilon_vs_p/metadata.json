@@ -1,0 +1,10 @@
+{
+  "description": "Scaled residual \u03b5_p vs prime p for twin prime pattern",
+  "K": 100000000,
+  "n_a_prime": 15662865,
+  "n_primes_tested": 166,
+  "max_prime": 1000,
+  "epsilon_definition": "\u03b5_p = (p-1) \u00d7 P\u0302(p|b | a prime) - 1",
+  "expected_value": "\u03b5_p \u2192 0 if local density model is correct",
+  "computation_time_seconds": 92.67440247535706
+}

@@ -1,0 +1,27 @@
+{
+  "pattern": "Twin primes",
+  "pattern_definition": "(6k-1, 6k+1) for k in [1, K]",
+  "candidate_domain": "6k±1 wheel (coprime to 2 and 3)",
+  "K": 1000000000,
+  "n_pairs": 1000000000,
+  "n_a_prime": 139775685,
+  "n_a_composite": 860224315,
+  "primes_tested": [5, 7, 11, 13],
+  "prediction_formula": "P(p|b | a prime) = 1/(p-1)",
+  "mechanism": "Mutual exclusivity: if p|(6k-1) and p|(6k+1), then p|2, impossible for p>=3",
+  "scaled_residual_definition": "ε_p = (p-1) × P̂(p|b | first prime) - 1",
+  "z_score_definition": "z = (observed - predicted) / SE, where SE = sqrt(p̂(1-p̂)/n)",
+  "z_score_note": "Binomial SE is a conservative yardstick, not a faithful null distribution for deterministic enumeration",
+  "run_timestamp": "2026-01-04T01:07:03Z",
+  "git_hash": "c0bc85e3cac398d37253da1826f694826e660cf2",
+  "hardware": {
+    "gpu": "NVIDIA GB10 (Grace Hopper)",
+    "compute_capability": "12.1",
+    "system": "DGX Spark"
+  },
+  "software": {
+    "python": "3.12",
+    "cuda": "12.x",
+    "container": "nvcr.io/nvidia/pytorch:25.12-py3"
+  }
+}
