@@ -2,13 +2,17 @@
 
 ## 5.1 What Is (and Isn't) New Here
 
-The $1/(p-1)$ factor in Proposition 3.1 is not new—it is the standard sifting density that appears when applying the linear sieve to shifted-prime sets like $\{p + 2 : p \leq x\}$. The formula has been understood since at least Brun's work on twin primes. A skeptical reader might reasonably ask: *what is new here?*
+The $1/(p-1)$ factor in Proposition 3.1 is not new—it is the standard sifting density that appears when applying the linear sieve to shifted-prime sets like $\{p + 2 : p \leq x\}$. The formula has been understood since at least Brun's work on twin primes.
+
+**Prior work on additive functions near primes.** The study of additive functions on shifted primes has a substantial literature. Elliott's *Probabilistic Number Theory* (1980) develops the general theory of additive functions on arithmetic progressions and shifted sequences. Halberstam studied $\omega(p-1)$ directly. More recently, Dixit and collaborators have analyzed $\omega_y(p+a)$ (the count of prime factors up to $y$) with explicit error terms. These works establish that primes are equidistributed in residue classes and that conditioning on primality affects the local density of small factors.
+
+A skeptical reader might reasonably ask: *if the mechanism is standard sieve theory, what is the contribution here?*
 
 We offer three responses.
 
 **The bridge to additive functions is explicit.** While the local density $1/(p-1)$ is standard, its consequence for additive functions like $\omega$ is typically left implicit. We make the connection explicit: summing the per-prime increments gives a constant $\sum 1/[p(p-1)] = 0.1065$ that predicts the mean shift in $\omega$ to within $1\%$. This is the simplest possible consequence of "one residue class is forbidden when the neighbor is prime," but stating it as a prediction with a constant (rather than vague heuristics) is what allows validation.
 
-**The numerical validation is precise.** The prediction $\mathbb{P}(p \mid b \mid a \text{ prime}) = 1/(p-1)$ is confirmed to six decimal places at $K = 10^9$. The mean shift $0.1074$ matches the heuristic $0.1065$ to within $1\%$. This precision rules out alternative explanations and confirms the heuristic independence assumption is essentially correct.
+**The numerical validation is precise.** The prediction $\mathbb{P}(p \mid b \mid a \text{ prime}) = 1/(p-1)$ is confirmed to six decimal places at $K = 10^9$. The mean shift $0.1074$ matches the prediction $0.1065$ to within $1\%$. This precision rules out alternative explanations and confirms that the linearity argument captures the dominant effect.
 
 **The decomposition separates small and large factors.** The transfer-matrix model naturally predicts $\omega_{\text{small}}$ (the count of small prime factors). Full $\omega$ includes a "large prime cofactor" contribution that requires separate analysis. The decomposition in Section 5.4 cleanly separates these effects: small primes contribute a 4.4% bias, large-prime cofactors cancel $\sim$13% of the absolute gap, yielding the observed 2.93% in full $\omega$.
 

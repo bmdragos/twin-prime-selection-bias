@@ -2,9 +2,9 @@
 
 ## 4.1 Motivation
 
-Section 3 established that the independent-prime heuristic, when applied to the correctly-aligned conditional expectations, predicts the observed effect with high accuracy. The purpose of this section is to provide a systematic framework for computing conditional expectations under various conditioning schemes.
+Section 3 established that linearity of expectation, combined with the local density $1/(p-1)$, predicts the observed effect with high accuracy. The purpose of this section is to provide a systematic framework for computing conditional expectations under various conditioning schemes.
 
-The residue-class model uses inclusion-exclusion over joint divisibility states to compute exact conditional expectations for any finite set of primes. It serves as a bookkeeping device that clarifies how different conditioning choices transform the expectations.
+The residue-class model uses inclusion-exclusion over joint divisibility states to compute **exact** conditional expectations for any finite set of primes. This is not a stochastic model—it is deterministic combinatorics: the Chinese Remainder Theorem tells us exactly which residue classes satisfy each divisibility condition, and mutual exclusivity (Section 3.1) constrains the state space. The model serves as a bookkeeping device that clarifies how different conditioning choices transform the expectations.
 
 ## 4.2 State Space
 

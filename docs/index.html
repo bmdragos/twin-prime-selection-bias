@@ -1020,13 +1020,13 @@ k mod 5:    0       1       2       3       4
                     <p>The unconditional probability $\mathbb{P}(p \mid b) = 1/p$ is boosted to $1/(p-1)$ upon conditioning. The per-prime increment is:</p>
                     $$\delta_p = \frac{1}{p-1} - \frac{1}{p} = \frac{1}{p(p-1)}$$
 
-                    <h2>3.2 The Independent-Prime Sum</h2>
+                    <h2>3.2 Linearity and Local Densities</h2>
                     <p>
-                        We now make a heuristic leap: assume that the primality of $a$ is determined independently by each
-                        prime $p$, and that the increments $\delta_p$ contribute additively to the expected number of
-                        distinct prime factors of $b$.
+                        The key insight is that for the <em>mean</em> of $\omega$, we do not need any independence assumption.
+                        The additive structure of $\omega$ gives us linearity directly:
                     </p>
-                    <p>Under the independent-prime heuristic:</p>
+                    $$\omega(n) = \sum_p \mathbf{1}_{p \mid n} \quad \Rightarrow \quad \mathbb{E}[\omega(n) \mid \cdot] = \sum_p \mathbb{P}(p \mid n \mid \cdot)$$
+                    <p>The per-prime conditional probabilities then determine the mean shift:</p>
                     $$\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b)] \approx \sum_{p \geq 5} \delta_p = \sum_{p \geq 5} \frac{1}{p(p-1)}$$
 
                     <p>This sum converges:</p>
@@ -1069,7 +1069,7 @@ k mod 5:    0       1       2       3       4
                     $$\frac{0.107}{0.1065} \approx 1.00$$
 
                     <div class="remark">
-                        <strong>Key result:</strong> The independent-prime heuristic accounts for essentially the entire
+                        <strong>Key result:</strong> The linearity-plus-local-densities argument accounts for essentially the entire
                         observed effect when applied to the correctly-aligned conditional expectations.
                     </div>
 
@@ -1101,13 +1101,15 @@ k mod 5:    0       1       2       3       4
 
                     <h2>4.1 Motivation</h2>
                     <p>
-                        Section 3 established that the independent-prime heuristic, when applied to correctly-aligned conditional expectations,
+                        Section 3 established that linearity of expectation, combined with the local density $1/(p-1)$,
                         predicts the observed effect with high accuracy. The purpose of this section is to provide a systematic framework
                         for computing conditional expectations under various conditioning schemes.
                     </p>
                     <p>
-                        We formulate a residue-class model using inclusion-exclusion over joint divisibility states.
-                        It serves as a bookkeeping device that clarifies how different conditioning choices transform expectations.
+                        The residue-class model uses inclusion-exclusion over joint divisibility states to compute <strong>exact</strong>
+                        conditional expectations for any finite set of primes. This is not a stochastic model—it is deterministic combinatorics:
+                        the Chinese Remainder Theorem tells us exactly which residue classes satisfy each divisibility condition,
+                        and mutual exclusivity constrains the state space.
                     </p>
 
                     <h2>4.2 State Space</h2>
@@ -1155,12 +1157,12 @@ k mod 5:    0       1       2       3       4
                     <h2>4.7 Interpretation</h2>
                     <p>The residue-class model provides:</p>
                     <ol>
-                        <li><strong>A proof that correlations reduce the bias.</strong> The independent-prime heuristic
-                            corresponds to replacing the joint distribution with a product measure.</li>
-                        <li><strong>A computable correction.</strong> For any finite $\mathcal{P}$, the bias can be
-                            computed exactly from the transfer matrix.</li>
-                        <li><strong>A bridge to analytic methods.</strong> The structure suggests connections to sieve
-                            theory, where similar product-over-primes formulas appear.</li>
+                        <li><strong>Exact finite-prime calculations.</strong> For any finite $\mathcal{P}$, the model computes
+                            conditional expectations exactly via deterministic combinatorics (CRT + mutual exclusivity).</li>
+                        <li><strong>Understanding correlations.</strong> The model shows how joint divisibility constraints
+                            (beyond simple product measures) affect expectations.</li>
+                        <li><strong>A bridge to sieve theory.</strong> The structure connects to classical sieve methods,
+                            where similar product-over-primes formulas appear.</li>
                     </ol>
                 </div>
             </div>
@@ -1170,11 +1172,11 @@ k mod 5:    0       1       2       3       4
                 <div class="paper-content">
                     <h1>5. Discussion</h1>
 
-                    <h2>5.1 Why This Is Not Surprising</h2>
+                    <h2>5.1 What Is (and Isn't) New Here</h2>
                     <p>
-                        The selection bias we observe is, in hindsight, predictable from first principles. The mutual
-                        exclusivity of divisibility is an elementary fact about modular arithmetic. A skeptical reader
-                        might reasonably ask: <em>what is new here?</em>
+                        The $1/(p-1)$ sifting density is standard—it appears in linear sieves for shifted-prime sets like $\{p+2\}$.
+                        The study of additive functions near primes has a substantial literature (Elliott, Halberstam, Dixit).
+                        A skeptical reader might ask: <em>what is the contribution here?</em>
                     </p>
                     <p>We offer three responses:</p>
                     <ul>

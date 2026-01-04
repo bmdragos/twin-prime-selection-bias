@@ -59,17 +59,28 @@ $$
 \delta_p = \frac{1}{p-1} - \frac{1}{p} = \frac{1}{p(p-1)}.
 $$
 
-## 3.2 The Independent-Prime Sum
+## 3.2 Linearity and Local Densities
 
-We now make a heuristic leap: assume that the increments $\delta_p$ contribute additively to the expected number of distinct prime factors of $b$.
-
-Let $\omega(n)$ denote the number of distinct primes dividing $n$. The exact identity $\mathbb{P}(p \mid b \mid p \nmid a) = 1/(p-1)$ leads, under the heuristic that "$a$ composite" is approximately unconditioned with respect to each small prime $p$, to:
+The key insight is that for the *mean* of $\omega$, we do not need any independence assumption. The additive structure of $\omega$ gives us linearity directly:
 
 $$
-\mathbb{E}[\omega(b) \mid a \text{ prime}] - \mathbb{E}[\omega(b) \mid a \text{ composite}] \approx \sum_{p \geq 5} \delta_p = \sum_{p \geq 5} \frac{1}{p(p-1)}.
+\omega(n) = \sum_{p} \mathbf{1}_{p \mid n} \quad \Rightarrow \quad \mathbb{E}[\omega(n) \mid \cdot] = \sum_{p} \mathbb{P}(p \mid n \mid \cdot).
 $$
 
-(The key assumption: conditioning on "$a$ composite" does not significantly bias the residue class $k \bmod p$ for small $p$, since primes are sparse.)
+This is just linearity of expectation applied to indicator random variables. The per-prime conditional probabilities then determine the mean shift.
+
+For the small-prime contribution (factors $p \leq \sqrt{N}$), we define:
+$$
+\omega_{\text{small}}(n) = \sum_{p \leq \sqrt{N}} \mathbf{1}_{p \mid n}.
+$$
+
+The exact identity $\mathbb{P}(p \mid b \mid p \nmid a) = 1/(p-1)$ combined with equidistribution of primes in residue classes gives:
+
+$$
+\mathbb{E}[\omega_{\text{small}}(b) \mid a \text{ prime}] - \mathbb{E}[\omega_{\text{small}}(b) \mid a \text{ composite}] \approx \sum_{p \geq 5} \delta_p = \sum_{p \geq 5} \frac{1}{p(p-1)}.
+$$
+
+**Important scope note:** This sum most directly predicts the shift in $\omega_{\text{small}}$, the count of *small* prime factors. The full $\omega$ includes a large-prime cofactor term that behaves differently (see Section 5.4 for the decomposition). The remarkable empirical match to full $\omega$ occurs because the large-prime effects partially cancel, as we measure explicitly.
 
 This sum converges:
 
@@ -131,7 +142,7 @@ $$
 \frac{0.1074}{0.1065} = 1.008
 $$
 
-The independent-prime heuristic accounts for essentially the entire observed effect when applied to the correctly-aligned conditional expectations.
+The linearity-plus-local-densities argument accounts for essentially the entire observed effect when applied to the correctly-aligned conditional expectations.
 
 ## 3.4 The Conditioning Transformation (Explicit Formula)
 

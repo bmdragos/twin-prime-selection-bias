@@ -4,7 +4,7 @@ First-principles derivation of the selection bias.
 
 The derivation has three layers:
 1. EXACT: The local mutual exclusivity identity
-2. HEURISTIC: The independent-prime sum
+2. HEURISTIC: Linearity + local densities (the 1/[p(p-1)] sum)
 3. EMPIRICAL: The calibration factor
 
 This script computes all three and compares to data.
@@ -131,7 +131,7 @@ def main():
     print(f"  c (PC vs unconditional): {delta_pc_uncond:.4f} / {sum_delta:.4f} = {c_vs_uncond:.3f}")
     print()
 
-    print("The naive independent-prime calculation overshoots by ~20-30%.")
+    print("The naive linear sum overshoots the PC-vs-CC shift by ~20-30%.")
     print()
 
     # ================================================================
@@ -181,9 +181,9 @@ Empirically, the observed PC-CC shift at K=10^9 is:''')
     print()
     print(f"  Delta_omega = {delta_pc_cc:.4f}")
     print()
-    print(f'''about {100*(1-c_vs_cc):.0f}% smaller than the naive independent-prime prediction,
-consistent with residual arithmetic correlations and the fact that
-CC is itself a conditioned composite population.''')
+    print(f'''about {100*(1-c_vs_cc):.0f}% smaller than the naive linear prediction of 0.1065,
+consistent with the fact that the sum predicts the full conditional
+(prime vs composite a), not the further-conditioned PC-vs-CC comparison.''')
     print()
 
     # ================================================================

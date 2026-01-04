@@ -104,9 +104,11 @@ twin-prime-selection-bias/
 │   ├── coefficient_extraction.py  # Model predictions
 │   └── experiments/
 │       ├── exp_omega_decomposition_gpu.py  # Small vs large prime decomposition
-│       ├── exp_sophie_germain_gpu.py       # Sophie Germain verification
-│       ├── exp_cousin_primes_gpu.py        # Cousin primes verification
-│       └── exp_per_prime_divisibility.py   # Per-prime 1/(p-1) verification
+│       ├── exp_sophie_germain_gpu.py       # Sophie Germain mean ω verification
+│       ├── exp_cousin_primes_gpu.py        # Cousin primes mean ω verification
+│       ├── exp_per_prime_divisibility.py   # Per-prime 1/(p-1) verification (twin primes)
+│       ├── exp_sophie_germain_per_prime.py # Per-prime verification for Sophie Germain
+│       └── exp_cousin_primes_per_prime.py  # Per-prime verification for cousin primes
 ├── docs/                     # GitHub Pages site
 ├── dgx-spark/                # Container setup for DGX
 ├── config/                   # Experiment parameters
@@ -129,7 +131,11 @@ Reproduce with:
 python -m src.experiments.exp_omega_decomposition_gpu --K 1e9
 python -m src.experiments.exp_sophie_germain_gpu --N 1e9
 python -m src.experiments.exp_cousin_primes_gpu --K 1e8
-python -m src.experiments.exp_per_prime_divisibility --K 1e9
+python -m src.experiments.exp_per_prime_divisibility 1e9
+
+# Per-prime verification for other patterns
+python -m src.experiments.exp_sophie_germain_per_prime 1e9
+python -m src.experiments.exp_cousin_primes_per_prime 1e8
 ```
 
 ## Technical Details
