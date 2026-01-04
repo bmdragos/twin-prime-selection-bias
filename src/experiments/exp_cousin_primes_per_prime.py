@@ -226,7 +226,7 @@ def compute_per_prime_stats_cpu(K: int, primes: List[int] = [3, 5, 7, 11, 13]) -
 
 
 def _build_results(K, n_prime, n_composite, primes, counts_n_prime, counts_n_comp) -> Dict:
-    """Build results dictionary from counts."""
+    """Build results dictionary from counts with uncertainty metrics."""
     # Sum only for p >= 5 (p=3 cancels)
     predicted_sum = sum(1/(p*(p-1)) for p in primes if p >= 5)
 
@@ -245,22 +245,44 @@ def _build_results(K, n_prime, n_composite, primes, counts_n_prime, counts_n_com
         p_b_given_n_prime = counts_n_prime[i] / n_prime if n_prime > 0 else 0
         p_b_given_n_comp = counts_n_comp[i] / n_composite if n_composite > 0 else 0
 
+        # Standard errors: SE = sqrt(p(1-p)/n) for Bernoulli
+        se_prime = np.sqrt(p_b_given_n_prime * (1 - p_b_given_n_prime) / n_prime) if n_prime > 0 else 0
+        se_comp = np.sqrt(p_b_given_n_comp * (1 - p_b_given_n_comp) / n_composite) if n_composite > 0 else 0
+
         # For p=3, the "naive" prediction is 1/3, but actual depends on residue class mix
         # The INCREMENT prediction is still 1/[p(p-1)] for p >= 5, but ~0 for p=3
         if p == 3:
             note = "Residue-class determined (should cancel)"
+            pred_prime = None  # p=3 is special
+            pred_comp = None
+            pred_incr = 0
         else:
             note = None
+            pred_prime = 1 / (p - 1)
+            pred_comp = 1 / p
+            pred_incr = 1 / (p * (p - 1))
+
+        # Z-scores: (observed - expected) / SE (only for p >= 5)
+        z_prime = (p_b_given_n_prime - pred_prime) / se_prime if (p >= 5 and se_prime > 0) else None
+        z_comp = (p_b_given_n_comp - pred_comp) / se_comp if (p >= 5 and se_comp > 0) else None
+
+        # Scaled residual: ε_p = (p-1) × P̂ - 1 (only for p >= 5)
+        scaled_residual = (p - 1) * p_b_given_n_prime - 1 if p >= 5 else None
 
         results['primes'][p] = {
             'count_n_prime_and_p_div_b': int(counts_n_prime[i]),
             'count_n_comp_and_p_div_b': int(counts_n_comp[i]),
             'empirical_given_n_prime': float(p_b_given_n_prime),
             'empirical_given_n_composite': float(p_b_given_n_comp),
-            'predicted_given_n_prime': 1 / (p - 1) if p >= 5 else None,  # p=3 is special
-            'predicted_given_n_composite': 1 / p if p >= 5 else None,
+            'predicted_given_n_prime': pred_prime,
+            'predicted_given_n_composite': pred_comp,
+            'se_prime': float(se_prime),
+            'se_comp': float(se_comp),
+            'z_prime': z_prime,
+            'z_comp': z_comp,
+            'scaled_residual': scaled_residual,
             'increment': float(p_b_given_n_prime - p_b_given_n_comp),
-            'predicted_increment': 1 / (p * (p - 1)) if p >= 5 else 0,  # p=3 should be ~0
+            'predicted_increment': pred_incr,
             'note': note
         }
 
@@ -277,44 +299,50 @@ def compute_per_prime_stats(K: int, primes: List[int] = [3, 5, 7, 11, 13],
 
 
 def print_table(results: Dict):
-    """Print formatted table."""
-    print("\n" + "="*110)
+    """Print formatted table with uncertainty metrics."""
+    print("\n" + "="*120)
     print(f"Per-Prime Verification: {results['pattern']}")
-    print("="*110)
+    print("="*120)
     print(f"K = {results['K']:,}, Population: {results['population']}")
     print(f"n prime: {results['n_prime']:,}, n composite: {results['n_composite']:,}")
     print(f"Predicted Σ 1/[p(p-1)] for p >= 5: {results['predicted_sum']:.4f}")
     print(f"Note: {results['note']}")
     print()
 
-    header = "| p  | P(p|b|n prime) emp | pred 1/(p-1) | P(p|b|n comp) emp | pred ~1/p | Increment emp | pred         | Note |"
-    sep =    "|----|--------------------|--------------|--------------------|-----------|---------------|--------------|------|"
+    header = "| p  | P(p|b|n prime) | pred 1/(p-1) | SE          | z-score | ε_p (scaled) | Increment | Note |"
+    sep =    "|----|----------------|--------------|-------------|---------|--------------|-----------|------|"
     print(header)
     print(sep)
 
     for p, data in results['primes'].items():
         emp_np = data['empirical_given_n_prime']
         pred_np = data['predicted_given_n_prime']
-        emp_nc = data['empirical_given_n_composite']
-        pred_nc = data['predicted_given_n_composite']
+        se = data['se_prime']
+        z = data['z_prime']
+        eps = data['scaled_residual']
         incr = data['increment']
-        pred_incr = data['predicted_increment']
         note = data.get('note', '')
 
-        pred_np_str = f"{pred_np:.6f}" if pred_np is not None else "N/A"
-        pred_nc_str = f"{pred_nc:.6f}" if pred_nc is not None else "N/A"
+        pred_str = f"{pred_np:.6f}" if pred_np is not None else "N/A"
+        z_str = f"{z:+.2f}" if z is not None else "N/A"
+        eps_str = f"{eps:+.4f}" if eps is not None else "N/A"
 
-        print(f"| {p:2d} | {emp_np:.6f}           | {pred_np_str:>12} | {emp_nc:.6f}           | {pred_nc_str:>9} | {incr:+.6f}     | {pred_incr:.6f}     | {note or ''} |")
+        print(f"| {p:2d} | {emp_np:.6f}       | {pred_str:>12} | {se:.2e}  | {z_str:>7} | {eps_str:>12} | {incr:+.4f}    | {note or ''} |")
+
+    print()
+    print("ε_p = (p-1) × P̂ - 1  [should hover around 0 for p >= 5]")
+    print("z-score = (observed - predicted) / SE  [within ±2 is expected noise]")
+    print("p=3 is residue-class determined, not primality-dependent")
 
 
 def save_results(results: Dict, output_dir: Path):
-    """Save results to reference directory."""
+    """Save results to reference directory with uncertainty metrics."""
     import csv
 
     ref_dir = output_dir / 'cousin_primes'
     ref_dir.mkdir(parents=True, exist_ok=True)
 
-    # CSV
+    # CSV with uncertainty
     csv_path = ref_dir / 'per_prime_table.csv'
     with open(csv_path, 'w', newline='') as f:
         writer = csv.writer(f)
@@ -323,12 +351,16 @@ def save_results(results: Dict, output_dir: Path):
                         f"{results['predicted_sum']:.6f}", results['note']])
         writer.writerow([])
         writer.writerow(['p', 'emp_given_n_prime', 'pred_1/(p-1)',
+                        'se_prime', 'z_prime', 'scaled_residual',
                         'emp_given_n_comp', 'pred_1/p', 'increment', 'pred_increment', 'note'])
         for p, data in results['primes'].items():
             writer.writerow([
                 p,
                 f"{data['empirical_given_n_prime']:.6f}",
                 data['predicted_given_n_prime'] if data['predicted_given_n_prime'] else 'N/A',
+                f"{data['se_prime']:.2e}",
+                f"{data['z_prime']:.2f}" if data['z_prime'] is not None else 'N/A',
+                f"{data['scaled_residual']:.5f}" if data['scaled_residual'] is not None else 'N/A',
                 f"{data['empirical_given_n_composite']:.6f}",
                 data['predicted_given_n_composite'] if data['predicted_given_n_composite'] else 'N/A',
                 f"{data['increment']:.6f}",
@@ -336,23 +368,27 @@ def save_results(results: Dict, output_dir: Path):
                 data.get('note', '')
             ])
 
-    # Markdown
+    # Markdown with uncertainty
     md_path = ref_dir / 'per_prime_table.md'
     with open(md_path, 'w') as f:
         f.write(f"# Cousin Primes Per-Prime Verification\n\n")
         f.write(f"Pattern: $(n, n+4)$ among $6k \\pm 1$ candidates\n\n")
-        f.write(f"$K = {results['K']:,}$\n\n")
+        f.write(f"$K = {results['K']:,}$ ({results['n_prime']:,} $n$ prime)\n\n")
         f.write(f"**Note:** For $p=3$, divisibility of $n+4$ depends on residue class:\n")
         f.write(f"- $n = 6k-1 \\Rightarrow n+4 = 6k+3 \\equiv 0 \\pmod 3$ (always)\n")
         f.write(f"- $n = 6k+1 \\Rightarrow n+4 = 6k+5 \\equiv 2 \\pmod 3$ (never)\n\n")
         f.write(f"Since prime/composite $n$ have the same residue-class mix, $p=3$ contributes zero to the difference.\n\n")
         f.write(f"Predicted: $\\sum_{{p \\geq 5}} 1/[p(p-1)] = {results['predicted_sum']:.4f}$\n\n")
-        f.write("| $p$ | $\\mathbb{P}(p \\mid b \\mid n \\text{ prime})$ | Predicted | $\\mathbb{P}(p \\mid b \\mid n \\text{ comp})$ | Increment | Note |\n")
-        f.write("|-----|------------------------------------------------|-----------|-----------------------------------------------|-----------|------|\n")
+        f.write("| $p$ | $\\hat{P}(p \\mid b \\mid n \\text{ prime})$ | $1/(p-1)$ | SE | $z$ | $\\varepsilon_p$ | Note |\n")
+        f.write("|-----|-----------------------------------------------|-----------|------------|-------|----------------|------|\n")
         for p, data in results['primes'].items():
             pred = f"{data['predicted_given_n_prime']:.4f}" if data['predicted_given_n_prime'] else "—"
+            z_str = f"{data['z_prime']:+.2f}" if data['z_prime'] is not None else "—"
+            eps_str = f"{data['scaled_residual']:+.5f}" if data['scaled_residual'] is not None else "—"
             note = data.get('note', '') or ''
-            f.write(f"| {p} | **{data['empirical_given_n_prime']:.4f}** | {pred} | {data['empirical_given_n_composite']:.4f} | {data['increment']:+.4f} | {note} |\n")
+            f.write(f"| {p} | {data['empirical_given_n_prime']:.6f} | {pred} | {data['se_prime']:.2e} | {z_str} | {eps_str} | {note} |\n")
+        f.write("\n$\\varepsilon_p = (p-1) \\cdot \\hat{P} - 1$: scaled residual (0 if model exact)\n\n")
+        f.write("$z$-scores within $\\pm 2$ are expected sampling noise.\n")
 
     print(f"\nResults saved to {ref_dir}/")
 

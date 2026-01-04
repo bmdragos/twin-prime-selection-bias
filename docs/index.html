@@ -541,6 +541,44 @@
             </div>
         </section>
 
+        <!-- VISUALIZATION: Distribution shift -->
+        <section style="background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);">
+            <div class="container">
+                <h2>Visualizing the Distribution Shift</h2>
+                <p class="section-desc">
+                    Conditioning on "a is prime" doesn't just shift the mean—it reshapes the entire distribution of $\omega(b)$.
+                </p>
+                <div class="grid-2" style="margin-top: 24px;">
+                    <div>
+                        <img src="omega_distribution_overlay.png" alt="Distribution overlay" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);">
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; text-align: center;">
+                            PC composites (red) are shifted right relative to CC (blue).
+                        </p>
+                    </div>
+                    <div>
+                        <img src="omega_distribution_difference.png" alt="Distribution difference" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);">
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; text-align: center;">
+                            The shift: depleted at $\omega=2$, enriched at $\omega \geq 3$.
+                        </p>
+                    </div>
+                </div>
+                <div class="grid-2" style="margin-top: 24px;">
+                    <div>
+                        <img src="per_prime_density_comparison.png" alt="Per-prime density" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);">
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; text-align: center;">
+                            The mechanism: each prime contributes $1/(p-1) - 1/p = 1/[p(p-1)]$.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="cumulative_increment.png" alt="Cumulative increment" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);">
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; text-align: center;">
+                            Small primes dominate: 94% of the effect by $p=31$.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- EVIDENCE: The bias is real -->
         <section>
             <div class="container">

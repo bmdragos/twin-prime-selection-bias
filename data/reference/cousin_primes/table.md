@@ -11,8 +11,3 @@ $K = 100,000,000$
 Predicted: Σ 1/[p(p-1)] for p ≥ 5 = 0.1064
 
 Relative error: 0.08%
-
-Note on p=3: For n = 6k-1, n+4 = 6k+3 ≡ 0 (mod 3) always.
-For n = 6k+1, n+4 = 6k+5 ≢ 0 (mod 3).
-Since 3|n+4 is determined by residue class (not primality of n),
-the p=3 term contributes zero to the difference. The sum starts at p=5.

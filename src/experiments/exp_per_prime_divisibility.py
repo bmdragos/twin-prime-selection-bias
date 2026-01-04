@@ -233,13 +233,34 @@ def compute_per_prime_stats_gpu(K: int, primes: List[int] = [5, 7, 11, 13]) -> D
         p_b_given_a_prime = counts_a_prime[i] / n_a_prime if n_a_prime > 0 else 0
         p_b_given_a_comp = counts_a_comp[i] / n_a_composite if n_a_composite > 0 else 0
 
+        # Standard errors: SE = sqrt(p(1-p)/n) for Bernoulli
+        se_prime = np.sqrt(p_b_given_a_prime * (1 - p_b_given_a_prime) / n_a_prime) if n_a_prime > 0 else 0
+        se_comp = np.sqrt(p_b_given_a_comp * (1 - p_b_given_a_comp) / n_a_composite) if n_a_composite > 0 else 0
+
+        # Predicted values
+        pred_prime = 1 / (p - 1)
+        pred_comp = 1 / p
+
+        # Z-scores: (observed - expected) / SE
+        z_prime = (p_b_given_a_prime - pred_prime) / se_prime if se_prime > 0 else 0
+        z_comp = (p_b_given_a_comp - pred_comp) / se_comp if se_comp > 0 else 0
+
+        # Scaled residual: ε_p = (p-1) × P̂ - 1
+        # If model is correct, ε_p should hover around 0
+        scaled_residual = (p - 1) * p_b_given_a_prime - 1
+
         results['primes'][p] = {
             'count_a_prime_and_p_div_b': int(counts_a_prime[i]),
             'count_a_comp_and_p_div_b': int(counts_a_comp[i]),
             'empirical_given_a_prime': p_b_given_a_prime,
             'empirical_given_a_composite': p_b_given_a_comp,
-            'predicted_given_a_prime': 1 / (p - 1),
-            'predicted_given_a_composite': 1 / p,
+            'predicted_given_a_prime': pred_prime,
+            'predicted_given_a_composite': pred_comp,
+            'se_prime': se_prime,
+            'se_comp': se_comp,
+            'z_prime': z_prime,
+            'z_comp': z_comp,
+            'scaled_residual': scaled_residual,
             'increment': p_b_given_a_prime - p_b_given_a_comp,
             'predicted_increment': 1 / (p * (p - 1))
         }
@@ -287,13 +308,34 @@ def compute_per_prime_stats_cpu(K: int, primes: List[int] = [5, 7, 11, 13]) -> D
         p_b_given_a_prime = count_a_prime / n_a_prime if n_a_prime > 0 else 0
         p_b_given_a_comp = count_a_comp / n_a_composite if n_a_composite > 0 else 0
 
+        # Standard errors: SE = sqrt(p(1-p)/n) for Bernoulli
+        se_prime = np.sqrt(p_b_given_a_prime * (1 - p_b_given_a_prime) / n_a_prime) if n_a_prime > 0 else 0
+        se_comp = np.sqrt(p_b_given_a_comp * (1 - p_b_given_a_comp) / n_a_composite) if n_a_composite > 0 else 0
+
+        # Predicted values
+        pred_prime = 1 / (p - 1)
+        pred_comp = 1 / p
+
+        # Z-scores: (observed - expected) / SE
+        z_prime = (p_b_given_a_prime - pred_prime) / se_prime if se_prime > 0 else 0
+        z_comp = (p_b_given_a_comp - pred_comp) / se_comp if se_comp > 0 else 0
+
+        # Scaled residual: ε_p = (p-1) × P̂ - 1
+        # If model is correct, ε_p should hover around 0
+        scaled_residual = (p - 1) * p_b_given_a_prime - 1
+
         results['primes'][p] = {
             'count_a_prime_and_p_div_b': int(count_a_prime),
             'count_a_comp_and_p_div_b': int(count_a_comp),
             'empirical_given_a_prime': float(p_b_given_a_prime),
             'empirical_given_a_composite': float(p_b_given_a_comp),
-            'predicted_given_a_prime': 1 / (p - 1),
-            'predicted_given_a_composite': 1 / p,
+            'predicted_given_a_prime': pred_prime,
+            'predicted_given_a_composite': pred_comp,
+            'se_prime': float(se_prime),
+            'se_comp': float(se_comp),
+            'z_prime': float(z_prime),
+            'z_comp': float(z_comp),
+            'scaled_residual': float(scaled_residual),
             'increment': float(p_b_given_a_prime - p_b_given_a_comp),
             'predicted_increment': 1 / (p * (p - 1))
         }
@@ -319,46 +361,55 @@ def compute_per_prime_stats(K: int, primes: List[int] = [5, 7, 11, 13],
 
 
 def print_table(results: Dict):
-    """Print results as a formatted table."""
-    print("\n" + "="*100)
-    print("Table 3.1: Per-Prime Verification")
-    print("="*100)
+    """Print results as a formatted table with uncertainty metrics."""
+    print("\n" + "="*110)
+    print("Table 3.1: Per-Prime Verification with Uncertainty")
+    print("="*110)
     print(f"K = {results['K']:,}")
     print(f"Pairs with a prime: {results['n_a_prime']:,}")
     print(f"Pairs with a composite: {results['n_a_composite']:,}")
     print()
 
-    header = "| p  | P(p|b|a prime) emp | pred 1/(p-1) | P(p|b|a comp) emp | pred ~1/p | Increment emp | pred 1/[p(p-1)] |"
-    sep =    "|----|--------------------|--------------|-------------------|-----------|---------------|-----------------|"
+    # Main table
+    header = "| p  | P(p|b|a prime) | pred 1/(p-1) | SE          | z-score | ε_p (scaled) |"
+    sep =    "|----|----------------|--------------|-------------|---------|--------------|"
     print(header)
     print(sep)
 
     for p, data in results['primes'].items():
         emp_ap = data['empirical_given_a_prime']
         pred_ap = data['predicted_given_a_prime']
-        emp_ac = data['empirical_given_a_composite']
-        pred_ac = data['predicted_given_a_composite']
-        incr = data['increment']
-        pred_incr = data['predicted_increment']
-        print(f"| {p:2d} | {emp_ap:.6f}           | {pred_ap:.6f}     | {emp_ac:.6f}          | {pred_ac:.6f}  | {incr:.6f}      | {pred_incr:.6f}        |")
+        se = data['se_prime']
+        z = data['z_prime']
+        eps = data['scaled_residual']
+        print(f"| {p:2d} | {emp_ap:.6f}       | {pred_ap:.6f}     | {se:.2e}  | {z:+.2f}   | {eps:+.4f}      |")
+
+    print()
+    print("ε_p = (p-1) × P̂(p|b|a prime) - 1  [should hover around 0 if model correct]")
+    print("z-score = (observed - predicted) / SE  [within ±2 is expected noise]")
 
 
 def print_markdown_table(results: Dict):
-    """Print results as markdown table for paper inclusion."""
+    """Print results as markdown table for paper inclusion with uncertainty."""
     print("\n### Empirical Per-Prime Verification")
     print()
-    print(f"At $K = {results['K']:,}$:")
+    print(f"At $K = {results['K']:,}$ ({results['n_a_prime']:,} pairs with $a$ prime):")
     print()
-    print("| $p$ | $\\mathbb{P}(p \\mid b \\mid a \\text{ prime})$ | Predicted $1/(p-1)$ | $\\mathbb{P}(p \\mid b \\mid a \\text{ comp})$ | Increment | Predicted $1/[p(p-1)]$ |")
-    print("|-----|------------------------------------------------|---------------------|-----------------------------------------------|-----------|------------------------|")
+    print("| $p$ | $\\hat{P}(p \\mid b \\mid a \\text{ prime})$ | $1/(p-1)$ | SE | $z$ | $\\varepsilon_p$ |")
+    print("|-----|-----------------------------------------------|-----------|------------|-------|-----------------|")
 
     for p, data in results['primes'].items():
         emp_prime = data['empirical_given_a_prime']
         pred_prime = data['predicted_given_a_prime']
-        emp_comp = data['empirical_given_a_composite']
-        increment = data['increment']
-        pred_incr = data['predicted_increment']
-        print(f"| {p} | {emp_prime:.4f} | {pred_prime:.4f} | {emp_comp:.4f} | {increment:.4f} | {pred_incr:.4f} |")
+        se = data['se_prime']
+        z = data['z_prime']
+        eps = data['scaled_residual']
+        print(f"| {p} | {emp_prime:.6f} | {pred_prime:.4f} | {se:.2e} | {z:+.2f} | {eps:+.5f} |")
+
+    print()
+    print("$\\varepsilon_p = (p-1) \\cdot \\hat{P} - 1$: scaled residual (0 if model exact)")
+    print()
+    print("$z$-scores within $\\pm 2$ are expected sampling noise.")
 
 
 def save_results(results: Dict, output_dir: Path, use_timestamp: bool = True):
@@ -383,6 +434,7 @@ def save_results(results: Dict, output_dir: Path, use_timestamp: bool = True):
         writer.writerow(['p', 'count_a_prime_p_div_b', 'count_a_comp_p_div_b',
                         'emp_given_a_prime', 'emp_given_a_comp',
                         'pred_given_a_prime', 'pred_given_a_comp',
+                        'se_prime', 'se_comp', 'z_prime', 'z_comp', 'scaled_residual',
                         'increment', 'pred_increment'])
         for p, data in results['primes'].items():
             writer.writerow([
@@ -393,6 +445,11 @@ def save_results(results: Dict, output_dir: Path, use_timestamp: bool = True):
                 data['empirical_given_a_composite'],
                 data['predicted_given_a_prime'],
                 data['predicted_given_a_composite'],
+                data['se_prime'],
+                data['se_comp'],
+                data['z_prime'],
+                data['z_comp'],
+                data['scaled_residual'],
                 data['increment'],
                 data['predicted_increment']
             ])
@@ -401,11 +458,13 @@ def save_results(results: Dict, output_dir: Path, use_timestamp: bool = True):
     md_path = run_dir / 'table_3_1.md'
     with open(md_path, 'w') as f:
         f.write(f"# Table 3.1: Per-Prime Verification\n\n")
-        f.write(f"$K = {results['K']:,}$\n\n")
-        f.write("| $p$ | $\\mathbb{P}(p \\mid b \\mid a \\text{ prime})$ | Predicted $1/(p-1)$ | $\\mathbb{P}(p \\mid b \\mid a \\text{ comp})$ | Increment | Predicted $1/[p(p-1)]$ |\n")
-        f.write("|-----|------------------------------------------------|---------------------|-----------------------------------------------|-----------|------------------------|\n")
+        f.write(f"$K = {results['K']:,}$ ({results['n_a_prime']:,} pairs with $a$ prime)\n\n")
+        f.write("| $p$ | $\\hat{P}(p \\mid b \\mid a \\text{ prime})$ | $1/(p-1)$ | SE | $z$ | $\\varepsilon_p$ |\n")
+        f.write("|-----|-----------------------------------------------|-----------|------------|-------|----------------|\n")
         for p, data in results['primes'].items():
-            f.write(f"| {p} | {data['empirical_given_a_prime']:.4f} | {data['predicted_given_a_prime']:.4f} | {data['empirical_given_a_composite']:.4f} | {data['increment']:.4f} | {data['predicted_increment']:.4f} |\n")
+            f.write(f"| {p} | {data['empirical_given_a_prime']:.6f} | {data['predicted_given_a_prime']:.4f} | {data['se_prime']:.2e} | {data['z_prime']:+.2f} | {data['scaled_residual']:+.5f} |\n")
+        f.write("\n$\\varepsilon_p = (p-1) \\cdot \\hat{P} - 1$: scaled residual (0 if model exact)\n\n")
+        f.write("$z$-scores within $\\pm 2$ are expected sampling noise.\n")
 
     print(f"\nResults saved to {run_dir}/")
     print(f"  - per_prime_divisibility.csv")
