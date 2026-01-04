@@ -10,13 +10,8 @@ The scaled residual is:
 
 If the model is correct, ε_p → 0 as K → ∞.
 
-This script:
-1. Tests many primes (up to a few thousand)
-2. Computes ε_p for each
-3. Saves data and generates a plot showing ε_p vs p
-
-The resulting plot should show all ε_p clustered near zero,
-providing visual confirmation that the mechanism is correct.
+This script uses GPU acceleration via Numba CUDA when available,
+falling back to CPU for systems without GPU support.
 """
 
 import numpy as np
@@ -25,14 +20,21 @@ import json
 import csv
 import argparse
 from pathlib import Path
+from typing import List, Dict
 
-# Check for GPU
+# Import project infrastructure
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from src.primes import prime_flags_upto
+
+# GPU support
 try:
-    import cupy as cp
-    HAS_GPU = True
+    from numba import cuda
+    import numba
+    HAS_GPU = cuda.is_available()
 except ImportError:
     HAS_GPU = False
-    print("CuPy not available, using CPU-only mode")
+    print("Numba CUDA not available, using CPU-only mode")
 
 
 def get_primes_up_to(n: int) -> np.ndarray:
@@ -45,148 +47,212 @@ def get_primes_up_to(n: int) -> np.ndarray:
     return np.where(sieve)[0]
 
 
-def compute_epsilon_gpu(K: int, primes_to_test: np.ndarray, block_size: int = 1_000_000):
+# =============================================================================
+# GPU Implementation (Numba CUDA)
+# =============================================================================
+
+if HAS_GPU:
+    # Kernel for processing a batch of primes (up to 256)
+    MAX_PRIMES_PER_BATCH = 256
+
+    @cuda.jit
+    def _epsilon_kernel(b_vals, a_is_prime, primes, n_primes, n,
+                        block_counts_a_prime, block_primality_counts):
+        """
+        CUDA kernel: count p|b occurrences when a is prime.
+        Uses shared memory block reduction, then writes partial sums.
+        """
+        # Shared memory for this block's partial sums
+        shared_counts = cuda.shared.array(256, dtype=numba.int64)  # up to 256 primes
+        shared_n_prime = cuda.shared.array(1, dtype=numba.int64)
+
+        tid = cuda.threadIdx.x
+        bid = cuda.blockIdx.x
+        idx = cuda.grid(1)
+
+        # Initialize shared memory
+        if tid < n_primes:
+            shared_counts[tid] = 0
+        if tid == 0:
+            shared_n_prime[0] = 0
+        cuda.syncthreads()
+
+        # Each thread processes its element
+        if idx < n:
+            b = b_vals[idx]
+            is_a_prime = a_is_prime[idx]
+
+            if is_a_prime:
+                cuda.atomic.add(shared_n_prime, 0, 1)
+                # Check divisibility by each prime
+                for p_idx in range(n_primes):
+                    p = primes[p_idx]
+                    if b % p == 0:
+                        cuda.atomic.add(shared_counts, p_idx, 1)
+
+        cuda.syncthreads()
+
+        # Write block results
+        if tid < n_primes:
+            block_counts_a_prime[bid, tid] = shared_counts[tid]
+        if tid == 0:
+            block_primality_counts[bid] = shared_n_prime[0]
+
+    @cuda.jit
+    def _reduce_counts_kernel(block_counts, n_blocks, n_primes, final_counts):
+        """Reduce block partial sums to final totals."""
+        p_idx = cuda.grid(1)
+        if p_idx >= n_primes:
+            return
+        total = 0
+        for i in range(n_blocks):
+            total += block_counts[i, p_idx]
+        final_counts[p_idx] = total
+
+    @cuda.jit
+    def _reduce_primality_kernel(block_primality, n_blocks, final_primality):
+        """Reduce primality counts."""
+        total = 0
+        for i in range(n_blocks):
+            total += block_primality[i]
+        final_primality[0] = total
+
+
+def compute_epsilon_gpu(K: int, primes_to_test: np.ndarray) -> tuple:
     """
     Compute ε_p for each prime using GPU.
 
-    Uses blocked processing to handle large K values.
+    Processes primes in batches to fit shared memory constraints.
+    Returns (n_a_prime, dict of counts per prime).
     """
-    import cupy as cp
+    print(f"GPU mode: Computing for K={K:,}, {len(primes_to_test)} primes")
 
-    # Total pairs
-    n_pairs = K
+    N = 6 * K + 1
+    print(f"  Building prime sieve up to {N:,}...")
+    t0 = time.time()
+    prime_flags = prime_flags_upto(N)
+    print(f"    Sieve completed in {time.time() - t0:.1f}s")
 
-    # Initialize counters
-    n_a_prime = 0
-    count_p_div_b_given_a_prime = {p: 0 for p in primes_to_test}
+    # Build arrays
+    print(f"  Building pair arrays...")
+    t0 = time.time()
+    k_vals = np.arange(1, K + 1, dtype=np.int64)
+    b_vals = 6 * k_vals + 1
+    a_vals = 6 * k_vals - 1
+    a_is_prime = prime_flags[a_vals].astype(np.uint8)
+    print(f"    Arrays built in {time.time() - t0:.1f}s")
 
-    # Process in blocks
-    for k_start in range(1, K + 1, block_size):
-        k_end = min(k_start + block_size, K + 1)
-        k_block = cp.arange(k_start, k_end, dtype=cp.int64)
+    # GPU setup
+    threads_per_block = 256
+    n_blocks = (K + threads_per_block - 1) // threads_per_block
 
-        # a = 6k - 1, b = 6k + 1
-        a = 6 * k_block - 1
-        b = 6 * k_block + 1
+    # Transfer input arrays once
+    print(f"  Transferring to GPU...")
+    t0 = time.time()
+    d_b_vals = cuda.to_device(b_vals)
+    d_a_is_prime = cuda.to_device(a_is_prime)
+    cuda.synchronize()
+    print(f"    Transfer completed in {time.time() - t0:.1f}s")
 
-        # Check primality (trial division for now)
-        a_is_prime = cp.ones(len(k_block), dtype=bool)
+    # Process primes in batches
+    all_counts = {}
+    n_a_prime = None
 
-        # Quick composite check using small primes
-        for p in [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]:
-            if p * p > int(a.max()):
-                break
-            a_is_prime &= (a % p != 0) | (a == p)
+    n_batches = (len(primes_to_test) + MAX_PRIMES_PER_BATCH - 1) // MAX_PRIMES_PER_BATCH
+    print(f"  Processing {n_batches} batch(es) of primes...")
 
-        # For larger factors, we need proper primality test
-        # Use trial division with remaining primes
-        max_a = int(a.max())
-        small_primes = get_primes_up_to(min(int(max_a**0.5) + 1, 50000))
-        for p in small_primes:
-            if p > 31:
-                a_is_prime &= (a % p != 0) | (a == p)
+    for batch_idx in range(n_batches):
+        start = batch_idx * MAX_PRIMES_PER_BATCH
+        end = min(start + MAX_PRIMES_PER_BATCH, len(primes_to_test))
+        batch_primes = primes_to_test[start:end]
+        n_primes = len(batch_primes)
 
-        # Count primes in a
-        n_a_prime += int(a_is_prime.sum())
+        print(f"    Batch {batch_idx+1}/{n_batches}: primes {batch_primes[0]} to {batch_primes[-1]}")
 
-        # For each test prime, count divisibility of b when a is prime
-        for p in primes_to_test:
-            mask = a_is_prime & (b % p == 0)
-            count_p_div_b_given_a_prime[p] += int(mask.sum())
+        # Allocate arrays for this batch
+        d_primes = cuda.to_device(batch_primes.astype(np.int64))
+        d_block_counts = cuda.device_array((n_blocks, n_primes), dtype=np.int64)
+        d_block_primality = cuda.device_array(n_blocks, dtype=np.int64)
+        d_final_counts = cuda.device_array(n_primes, dtype=np.int64)
+        d_final_primality = cuda.device_array(1, dtype=np.int64)
 
-    return n_a_prime, count_p_div_b_given_a_prime
+        # Run kernel
+        t0 = time.time()
+        _epsilon_kernel[n_blocks, threads_per_block](
+            d_b_vals, d_a_is_prime, d_primes, n_primes, K,
+            d_block_counts, d_block_primality
+        )
+
+        # Reduce
+        reduce_blocks = (n_primes + 31) // 32
+        _reduce_counts_kernel[reduce_blocks, 32](
+            d_block_counts, n_blocks, n_primes, d_final_counts
+        )
+        _reduce_primality_kernel[1, 1](d_block_primality, n_blocks, d_final_primality)
+
+        cuda.synchronize()
+
+        # Get results
+        counts = d_final_counts.copy_to_host()
+        if n_a_prime is None:
+            n_a_prime = int(d_final_primality.copy_to_host()[0])
+
+        for i, p in enumerate(batch_primes):
+            all_counts[int(p)] = int(counts[i])
+
+        print(f"      Completed in {time.time() - t0:.1f}s")
+
+    print(f"  Total primes with a prime: {n_a_prime:,}")
+    return n_a_prime, all_counts
 
 
-def compute_epsilon_cpu(K: int, primes_to_test: np.ndarray, block_size: int = 1_000_000):
+# =============================================================================
+# CPU Implementation (fallback)
+# =============================================================================
+
+def compute_epsilon_cpu(K: int, primes_to_test: np.ndarray) -> tuple:
     """
-    Compute ε_p for each prime using CPU with numpy and SPF sieve.
+    Compute ε_p for each prime using CPU.
+
+    Returns (n_a_prime, dict of counts per prime).
     """
-    # Build SPF sieve for primality testing
-    max_val = 6 * K + 1
-    print(f"Building SPF sieve up to {max_val:,}...")
+    print(f"CPU mode: Computing for K={K:,}, {len(primes_to_test)} primes")
 
-    # For very large K, use blocked primality check
-    if max_val > 1e9:
-        return compute_epsilon_cpu_blocked(K, primes_to_test, block_size)
+    N = 6 * K + 1
+    print(f"  Building prime sieve up to {N:,}...")
+    t0 = time.time()
+    prime_flags = prime_flags_upto(N)
+    print(f"    Sieve completed in {time.time() - t0:.1f}s")
 
-    # SPF sieve (0 = prime)
-    spf = np.zeros(max_val + 1, dtype=np.uint32)
-    for p in range(2, int(max_val**0.5) + 1):
-        if spf[p] == 0:  # p is prime
-            for m in range(p*p, max_val + 1, p):
-                if spf[m] == 0:
-                    spf[m] = p
+    # Build arrays
+    print(f"  Building pair arrays...")
+    t0 = time.time()
+    k_vals = np.arange(1, K + 1, dtype=np.int64)
+    b_vals = 6 * k_vals + 1
+    a_vals = 6 * k_vals - 1
+    a_is_prime = prime_flags[a_vals]
+    print(f"    Arrays built in {time.time() - t0:.1f}s")
 
-    # Process all pairs
-    k = np.arange(1, K + 1, dtype=np.int64)
-    a = 6 * k - 1
-    b = 6 * k + 1
-
-    # a is prime iff spf[a] == 0
-    a_is_prime = spf[a] == 0
+    # Count
     n_a_prime = int(a_is_prime.sum())
+    b_prime = b_vals[a_is_prime]
 
-    # Extract b values where a is prime
-    b_prime = b[a_is_prime]
+    print(f"  Counting divisibility for {len(primes_to_test)} primes...")
+    t0 = time.time()
+    counts = {}
+    for i, p in enumerate(primes_to_test):
+        if i % 50 == 0:
+            print(f"    Processing prime {i+1}/{len(primes_to_test)} (p={p})...")
+        counts[int(p)] = int((b_prime % p == 0).sum())
+    print(f"    Counting completed in {time.time() - t0:.1f}s")
 
-    # Count p|b for each test prime
-    results = {}
-    for p in primes_to_test:
-        count = int((b_prime % p == 0).sum())
-        results[p] = count
-
-    return n_a_prime, results
-
-
-def compute_epsilon_cpu_blocked(K: int, primes_to_test: np.ndarray, block_size: int = 10_000_000):
-    """Blocked CPU implementation for very large K."""
-    from multiprocessing import Pool, cpu_count
-
-    n_a_prime = 0
-    count_p_div_b_given_a_prime = {p: 0 for p in primes_to_test}
-
-    # For each block, we need a local sieve
-    for k_start in range(1, K + 1, block_size):
-        k_end = min(k_start + block_size, K + 1)
-        print(f"Processing k = {k_start:,} to {k_end:,}...")
-
-        # Local block
-        k_block = np.arange(k_start, k_end, dtype=np.int64)
-        a = 6 * k_block - 1
-        b = 6 * k_block + 1
-
-        max_val = int(b.max())
-        min_val = int(a.min())
-
-        # Segmented sieve for this range
-        is_prime_a = segmented_primality(a)
-
-        n_a_prime += int(is_prime_a.sum())
-
-        b_prime = b[is_prime_a]
-        for p in primes_to_test:
-            count_p_div_b_given_a_prime[p] += int((b_prime % p == 0).sum())
-
-    return n_a_prime, count_p_div_b_given_a_prime
+    print(f"  Total primes with a prime: {n_a_prime:,}")
+    return n_a_prime, counts
 
 
-def segmented_primality(values: np.ndarray) -> np.ndarray:
-    """Check primality for an array of values using trial division."""
-    max_val = int(values.max())
-    sqrt_max = int(max_val**0.5) + 1
-
-    # Get primes up to sqrt(max)
-    small_primes = get_primes_up_to(min(sqrt_max, 100000))
-
-    is_prime = np.ones(len(values), dtype=bool)
-
-    for p in small_primes:
-        if p * p > max_val:
-            break
-        is_prime &= (values % p != 0) | (values == p)
-
-    return is_prime
-
+# =============================================================================
+# Main
+# =============================================================================
 
 def main():
     parser = argparse.ArgumentParser(description="Compute ε_p for many primes")
@@ -194,6 +260,7 @@ def main():
     parser.add_argument("--max_prime", type=int, default=1000, help="Max prime to test (default: 1000)")
     parser.add_argument("--output", type=str, default="data/reference/epsilon_vs_p", help="Output directory")
     parser.add_argument("--no-plot", action="store_true", help="Skip plotting")
+    parser.add_argument("--cpu", action="store_true", help="Force CPU mode")
     args = parser.parse_args()
 
     K = int(args.K)
@@ -203,29 +270,28 @@ def main():
 
     print(f"Computing ε_p for primes up to {max_prime} with K = {K:,}")
     print(f"Output: {output_dir}")
+    print(f"GPU available: {HAS_GPU and not args.cpu}")
 
     # Get primes to test (skip 2 and 3 which are handled by the 6k±1 wheel)
     all_primes = get_primes_up_to(max_prime)
     primes_to_test = all_primes[all_primes >= 5]
-    print(f"Testing {len(primes_to_test)} primes: {primes_to_test[:10]}...{primes_to_test[-5:]}")
+    print(f"Testing {len(primes_to_test)} primes: {primes_to_test[:5]}...{primes_to_test[-3:]}")
 
     # Compute
     t0 = time.time()
 
-    if HAS_GPU:
-        print("Using GPU...")
+    if HAS_GPU and not args.cpu:
         n_a_prime, counts = compute_epsilon_gpu(K, primes_to_test)
     else:
-        print("Using CPU...")
         n_a_prime, counts = compute_epsilon_cpu(K, primes_to_test)
 
     elapsed = time.time() - t0
-    print(f"Computation took {elapsed:.1f}s")
-    print(f"n_a_prime = {n_a_prime:,}")
+    print(f"\nTotal computation took {elapsed:.1f}s")
 
     # Compute ε_p for each prime
     results = []
     for p in primes_to_test:
+        p = int(p)
         count = counts[p]
         p_hat = count / n_a_prime
         predicted = 1.0 / (p - 1)
@@ -234,7 +300,7 @@ def main():
         z = (p_hat - predicted) / se if se > 0 else 0
 
         results.append({
-            'p': int(p),
+            'p': p,
             'count': count,
             'p_hat': p_hat,
             'predicted': predicted,
@@ -260,7 +326,8 @@ def main():
         'max_prime': int(max_prime),
         'epsilon_definition': 'ε_p = (p-1) × P̂(p|b | a prime) - 1',
         'expected_value': 'ε_p → 0 if local density model is correct',
-        'computation_time_seconds': elapsed
+        'computation_time_seconds': elapsed,
+        'gpu_used': HAS_GPU and not args.cpu
     }
     with open(output_dir / "metadata.json", 'w') as f:
         json.dump(meta, f, indent=2)
