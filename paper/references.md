@@ -11,3 +11,9 @@
 5. J. Friedlander and H. Iwaniec, *Opera de Cribro*, American Mathematical Society Colloquium Publications, vol. 57, American Mathematical Society, Providence, RI, 2010.
 
 6. J. R. Chen, "On the representation of a larger even integer as the sum of a prime and the product of at most two primes," *Scientia Sinica* **16** (1973), 157–176.
+
+7. P. D. T. A. Elliott, *Probabilistic Number Theory I: Mean-Value Theorems*, Grundlehren der mathematischen Wissenschaften, vol. 239, Springer-Verlag, New York, 1979.
+
+8. P. D. T. A. Elliott, *Probabilistic Number Theory II: Central Limit Theorems*, Grundlehren der mathematischen Wissenschaften, vol. 240, Springer-Verlag, New York, 1980.
+
+9. P. Erdős and C. Pomerance, "On the normal number of prime factors of φ(n)," *Rocky Mountain Journal of Mathematics* **15** (1985), 343–352.
