@@ -56,3 +56,4 @@ data/results/
 /tmp/
 *.tar.gz
 /.lake
+proof/
