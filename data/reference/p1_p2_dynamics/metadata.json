@@ -1,0 +1,38 @@
+{
+  "description": "p\u2081/p\u2082 dynamics test of log-log exponential law",
+  "K": 10000000,
+  "n_cc": 6718444,
+  "cc_fraction": 0.6718444,
+  "computation_time_seconds": 9.754373788833618,
+  "predictions": {
+    "U": "Exp(1) \u2014 mean=1, from dimension-1 hazard",
+    "V": "Exp(2) \u2014 mean=0.5, from dimension-2 hazard",
+    "alpha": "Pareto(1) tail \u2014 P(\u03b1>t) \u2248 1/t"
+  },
+  "caveats": [
+    "Conditioning on CC (both composite) is explicit",
+    "Exponential law is exact in finite CRT model, heuristic for actual integers",
+    "Truncation at p\u2082 \u2264 6K+1 affects Pareto tail",
+    "Singular series effects may cause 1-5% deviations"
+  ],
+  "statistics": {
+    "n_valid": 6718444,
+    "n_U_pos": 6718444,
+    "n_V_pos": 3609325,
+    "U_mean": 0.6565893748690379,
+    "U_std": 0.42118562607031135,
+    "U_median": 0.5679922257645983,
+    "U_theoretical_mean": 1.0,
+    "U_ks_statistic": 0.18610279226725435,
+    "U_ks_pvalue": 0.0,
+    "V_mean": 0.5049405374704379,
+    "V_std": 0.32657477433162835,
+    "V_median": 0.39870638759657845,
+    "V_theoretical_mean": 0.5,
+    "V_ks_statistic": 0.31592630812426453,
+    "V_ks_pvalue": 0.0,
+    "alpha_mean": 2.119113776142757,
+    "alpha_median": 1.764720332103851,
+    "alpha_max": 5.562486069682511
+  }
+}

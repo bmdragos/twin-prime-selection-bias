@@ -1,0 +1,2 @@
+N,n_prime_count,n_composite_count,mean_omega_when_n_prime,mean_omega_when_n_composite,difference,predicted,relative_error
+10000000,664579,9335420,2.834415472050727,2.583068035503491,0.2513474365472357,0.2730296119016511,0.07941327390607587

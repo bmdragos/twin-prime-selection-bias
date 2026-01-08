@@ -59,6 +59,54 @@ cd /workspace/project && python run_gpu.py --K 1e9
 - **Unified memory (Grace Hopper/Blackwell)**: GPU accesses full system RAM directly; use GPU-side aggregation to avoid 8GB transfers per P value
 - **Discrete GPU**: Limited by VRAM; falls back to CPU-parallel for K >= 5×10^8
 
+### GPU Optimization Patterns (Numba CUDA)
+
+When writing new GPU-accelerated experiments, follow these established patterns:
+
+**1. Two-Phase Block Reduction**
+```python
+# Phase 1: Accumulate in shared memory per block
+shared_counts = cuda.shared.array(256, dtype=numba.int64)
+cuda.atomic.add(shared_counts, idx, 1)
+cuda.syncthreads()
+# Write block results
+block_counts[bid, tid] = shared_counts[tid]
+
+# Phase 2: Reduce block sums to final
+@cuda.jit
+def _reduce_kernel(block_counts, n_blocks, final_counts):
+    p_idx = cuda.grid(1)
+    total = 0
+    for i in range(n_blocks):
+        total += block_counts[i, p_idx]
+    final_counts[p_idx] = total
+```
+
+**2. Standard Grid Configuration**
+```python
+threads_per_block = 256
+n_blocks = (K + threads_per_block - 1) // threads_per_block
+kernel[n_blocks, threads_per_block](...)
+```
+
+**3. SPF Encoding Convention**
+- `spf[n] == 0` means n is **prime** (sentinel value)
+- `spf[n] > 0` means spf[n] is the smallest prime factor
+- To get actual SPF: `p = spf[n] if spf[n] > 0 else n`
+
+**4. Unified Memory Detection**
+```python
+def has_unified_memory() -> bool:
+    device = cuda.get_current_device()
+    cc = device.compute_capability
+    return cc[0] >= 9  # sm_90+ (Hopper) or sm_120+ (Blackwell)
+```
+
+**5. Key Files to Reference**
+- `src/gpu_factorization.py`: Core omega/state kernels, UnifiedMemoryGPUContext
+- `src/experiments/exp_epsilon_vs_p.py`: Recent example with batched prime processing
+- `src/experiments/exp_per_prime_divisibility.py`: Per-prime statistics with block reduction
+
 ### State Encoding
 - PP=0 (both prime), PC=1 (a prime, b composite), CP=2, CC=3
 - Twin primes are the PP pairs
@@ -73,3 +121,21 @@ Config files in `config/` specify:
 Results saved to `data/results/`:
 - `selection_bias_summary.csv`: State counts and mean omega per state
 - `model_vs_empirical.csv`: Model predictions vs empirical measurements
+
+## Sieve Dynamics Framework
+
+See `docs/sieve_dynamics_framework.md` for the full theoretical context.
+
+**Core claim**: In log-log time, primes arrive as a Poisson process with rate = sieve dimension.
+
+**Key predictions**:
+- First hit: V = log log p₁ - log log B ~ Exp(2) (rate 2 because 2 forms alive)
+- Second hit: U = log log p₂ - log log p₁ ~ Exp(1) (rate 1 after first elimination)
+- Run exponent: α = log p₂ / log p₁ has Pareto(1) tail
+
+**Definitions**:
+- p₁ = min(spf(a), spf(b)) — first prime to hit either member
+- p₂ = max(spf(a), spf(b)) — "second shoe" prime
+- B = 5 (smallest prime after 6k±1 wheel excludes 2, 3)
+
+This connects the per-prime divisibility verification (ε_p ≈ 0) to a joint distributional law.

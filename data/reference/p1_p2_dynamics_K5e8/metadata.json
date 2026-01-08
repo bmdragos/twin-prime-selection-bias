@@ -1,0 +1,42 @@
+{
+  "description": "p1/p2 dynamics test of log-log exponential law (GPU wheel SPF)",
+  "K": 500000000,
+  "computation_time_seconds": 310.1855640411377,
+  "predictions": {
+    "V": "Exp(2) \u2014 mean=0.5, first-hit law (all non-PP pairs)",
+    "U": "Exp(1) \u2014 mean=1.0, second-hit law (CC-only, censoring-biased)",
+    "alpha": "Pareto(1) tail \u2014 P(alpha>t) ~ 1/t (CC-only)"
+  },
+  "caveats": [
+    "PC+CP pairs (126,029,249) have p2=0, creating 25.7% censoring",
+    "U statistics are biased low because they condition on non-censoring",
+    "Pareto tail truncated at p2 <= 6K+1"
+  ],
+  "statistics": {
+    "state_counts": {
+      "PP": 9210143,
+      "PC": 63015912,
+      "CP": 63013337,
+      "CC": 364760608
+    },
+    "n_non_pp": 490789857,
+    "n_censored": 126029249,
+    "censoring_fraction": 0.25678861778107204,
+    "V_mean": 0.3633216619645567,
+    "V_std": 0.4435557697499589,
+    "V_median": 0.18984481525116587,
+    "V_theoretical_mean": 0.5,
+    "V_ks_statistic": 0.4075063821052031,
+    "V_ks_pvalue": 0.0,
+    "U_mean": 0.710169668754386,
+    "U_std": 0.46665314036520106,
+    "U_median": 0.6040333041949717,
+    "U_theoretical_mean": 1.0,
+    "U_ks_statistic": 0.152621470103107,
+    "U_ks_pvalue": 0.0,
+    "U_censoring_note": "CC-only; 25.7% of observations are censored (p2=0)",
+    "alpha_mean": 2.287737001212813,
+    "alpha_median": 1.8294828004351504,
+    "alpha_max": 6.779106437135624
+  }
+}

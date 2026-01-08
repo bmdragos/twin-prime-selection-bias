@@ -158,51 +158,91 @@ def run_experiment(K: int, P_grid: list, output_dir: Path):
 
     rows = []
 
-    for P in P_grid:
+    # Use FUSED computation if available (factor + count + aggregate in single kernel)
+    # This is the fastest method with minimal memory footprint
+    if gpu_ctx is not None and d_state_codes is not None and hasattr(gpu_ctx, 'compute_all_omega_fused'):
+        print("  Using FUSED kernel (factor + count + aggregate in one pass)")
         t0 = time.time()
-        print(f"  P = {P}...", end=" ", flush=True)
+        batched_results = gpu_ctx.compute_all_omega_fused(P_grid, d_state_codes)
+        print(f"  Total fused computation: {time.time() - t0:.1f}s")
 
-        # Compute omega (GPU aggregated, GPU full, or CPU-parallel)
-        if gpu_ctx is not None and d_state_codes is not None:
-            # GPU-side aggregation: returns only 8 sums instead of 8GB arrays
-            sums_a, sums_b = gpu_ctx.compute_omega_leq_P_aggregated(P, d_state_codes)
+        # Process results for each P
+        for P in P_grid:
+            sums_a, sums_b = batched_results[P]
             emp_mean_a = {code: sums_a[code] / state_counts[code] if state_counts[code] > 0 else np.nan
                          for code in range(4)}
             emp_mean_b = {code: sums_b[code] / state_counts[code] if state_counts[code] > 0 else np.nan
                          for code in range(4)}
-        elif gpu_ctx is not None:
-            # GPU full transfer (discrete GPU)
-            omega_a, omega_b = gpu_ctx.compute_omega_leq_P(P)
-            emp_mean_a = {code: mean_omega(omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
-                         for code in range(4)}
-            emp_mean_b = {code: mean_omega(omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
-                         for code in range(4)}
-        else:
-            from src.parallel_sieve import omega_leq_P_parallel
-            omega_a = omega_leq_P_parallel(a_vals, spf, P)
-            omega_b = omega_leq_P_parallel(b_vals, spf, P)
-            emp_mean_a = {code: mean_omega(omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
-                         for code in range(4)}
-            emp_mean_b = {code: mean_omega(omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
-                         for code in range(4)}
 
-        # Empirical stats by state
-        for code, state in code_to_state.items():
-            # Model predictions
-            probs = state_probabilities(P)
+            # Empirical stats by state
+            for code, state in code_to_state.items():
+                probs = state_probabilities(P)
+                rows.append({
+                    'P': P,
+                    'state': state,
+                    'emp_count': state_counts[code],
+                    'emp_mean_omega_a': emp_mean_a[code],
+                    'emp_mean_omega_b': emp_mean_b[code],
+                    'mod_probability': probs[state],
+                    'mod_mean_omega_a': model_mean_omega(P, state, 'a'),
+                    'mod_mean_omega_b': model_mean_omega(P, state, 'b'),
+                })
 
-            rows.append({
-                'P': P,
-                'state': state,
-                'emp_count': state_counts[code],
-                'emp_mean_omega_a': emp_mean_a[code],
-                'emp_mean_omega_b': emp_mean_b[code],
-                'mod_probability': probs[state],
-                'mod_mean_omega_a': model_mean_omega(P, state, 'a'),
-                'mod_mean_omega_b': model_mean_omega(P, state, 'b'),
-            })
+        # Get full omega from batched results
+        full_sums_a, full_sums_b = batched_results['full']
+        full_mean_a = {code: full_sums_a[code] / state_counts[code] if state_counts[code] > 0 else np.nan
+                       for code in range(4)}
+        full_mean_b = {code: full_sums_b[code] / state_counts[code] if state_counts[code] > 0 else np.nan
+                       for code in range(4)}
+        skip_full_omega = True  # Already computed
+    else:
+        skip_full_omega = False
+        # Fall back to sequential computation
+        for P in P_grid:
+            t0 = time.time()
+            print(f"  P = {P}...", end=" ", flush=True)
 
-        print(f"{time.time() - t0:.1f}s")
+            # Compute omega (GPU aggregated, GPU full, or CPU-parallel)
+            if gpu_ctx is not None and d_state_codes is not None:
+                # GPU-side aggregation: returns only 8 sums instead of 8GB arrays
+                sums_a, sums_b = gpu_ctx.compute_omega_leq_P_aggregated(P, d_state_codes)
+                emp_mean_a = {code: sums_a[code] / state_counts[code] if state_counts[code] > 0 else np.nan
+                             for code in range(4)}
+                emp_mean_b = {code: sums_b[code] / state_counts[code] if state_counts[code] > 0 else np.nan
+                             for code in range(4)}
+            elif gpu_ctx is not None:
+                # GPU full transfer (discrete GPU)
+                omega_a, omega_b = gpu_ctx.compute_omega_leq_P(P)
+                emp_mean_a = {code: mean_omega(omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
+                             for code in range(4)}
+                emp_mean_b = {code: mean_omega(omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
+                             for code in range(4)}
+            else:
+                from src.parallel_sieve import omega_leq_P_parallel
+                omega_a = omega_leq_P_parallel(a_vals, spf, P)
+                omega_b = omega_leq_P_parallel(b_vals, spf, P)
+                emp_mean_a = {code: mean_omega(omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
+                             for code in range(4)}
+                emp_mean_b = {code: mean_omega(omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
+                             for code in range(4)}
+
+            # Empirical stats by state
+            for code, state in code_to_state.items():
+                # Model predictions
+                probs = state_probabilities(P)
+
+                rows.append({
+                    'P': P,
+                    'state': state,
+                    'emp_count': state_counts[code],
+                    'emp_mean_omega_a': emp_mean_a[code],
+                    'emp_mean_omega_b': emp_mean_b[code],
+                    'mod_probability': probs[state],
+                    'mod_mean_omega_a': model_mean_omega(P, state, 'a'),
+                    'mod_mean_omega_b': model_mean_omega(P, state, 'b'),
+                })
+
+            print(f"{time.time() - t0:.1f}s")
 
     # Build results DataFrame
     df = pd.DataFrame(rows)
@@ -214,31 +254,34 @@ def run_experiment(K: int, P_grid: list, output_dir: Path):
     df.to_csv(output_dir / 'model_vs_empirical.csv', index=False)
 
     # Also save selection bias summary
-    # Compute full omega once using GPU context or CPU-parallel
-    print("  Computing full omega for selection bias...")
-    t0 = time.time()
-    if gpu_ctx is not None and d_state_codes is not None:
-        # GPU-side aggregation
-        sums_a, sums_b = gpu_ctx.compute_omega_aggregated(d_state_codes)
-        full_mean_a = {code: sums_a[code] / state_counts[code] if state_counts[code] > 0 else np.nan
-                       for code in range(4)}
-        full_mean_b = {code: sums_b[code] / state_counts[code] if state_counts[code] > 0 else np.nan
-                       for code in range(4)}
-    elif gpu_ctx is not None:
-        full_omega_a, full_omega_b = gpu_ctx.compute_omega()
-        full_mean_a = {code: np.mean(full_omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
-                       for code in range(4)}
-        full_mean_b = {code: np.mean(full_omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
-                       for code in range(4)}
+    # Compute full omega (unless already computed in batched mode)
+    if not skip_full_omega:
+        print("  Computing full omega for selection bias...")
+        t0 = time.time()
+        if gpu_ctx is not None and d_state_codes is not None:
+            # GPU-side aggregation
+            sums_a, sums_b = gpu_ctx.compute_omega_aggregated(d_state_codes)
+            full_mean_a = {code: sums_a[code] / state_counts[code] if state_counts[code] > 0 else np.nan
+                           for code in range(4)}
+            full_mean_b = {code: sums_b[code] / state_counts[code] if state_counts[code] > 0 else np.nan
+                           for code in range(4)}
+        elif gpu_ctx is not None:
+            full_omega_a, full_omega_b = gpu_ctx.compute_omega()
+            full_mean_a = {code: np.mean(full_omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
+                           for code in range(4)}
+            full_mean_b = {code: np.mean(full_omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
+                           for code in range(4)}
+        else:
+            from src.parallel_sieve import omega_parallel
+            full_omega_a = omega_parallel(a_vals, spf)
+            full_omega_b = omega_parallel(b_vals, spf)
+            full_mean_a = {code: np.mean(full_omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
+                           for code in range(4)}
+            full_mean_b = {code: np.mean(full_omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
+                           for code in range(4)}
+        print(f"    Completed in {time.time() - t0:.1f}s")
     else:
-        from src.parallel_sieve import omega_parallel
-        full_omega_a = omega_parallel(a_vals, spf)
-        full_omega_b = omega_parallel(b_vals, spf)
-        full_mean_a = {code: np.mean(full_omega_a[state_codes == code]) if state_counts[code] > 0 else np.nan
-                       for code in range(4)}
-        full_mean_b = {code: np.mean(full_omega_b[state_codes == code]) if state_counts[code] > 0 else np.nan
-                       for code in range(4)}
-    print(f"    Completed in {time.time() - t0:.1f}s")
+        print("  Full omega already computed in batched mode")
 
     bias_rows = []
     for code, state in code_to_state.items():

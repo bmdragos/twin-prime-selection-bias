@@ -301,6 +301,168 @@ if HAS_GPU:
             total += block_sums[i, state]
         final_sums[state] = total
 
+    @cuda.jit
+    def _aggregate_batched_row_kernel(results_row, state_codes, n, block_sums):
+        """
+        Aggregate a single row from batched results by state.
+        results_row: 1D array of omega values for one P threshold
+        """
+        shared_sums = cuda.shared.array(4, dtype=numba.float64)
+
+        tid = cuda.threadIdx.x
+        bid = cuda.blockIdx.x
+        idx = cuda.grid(1)
+
+        if tid < 4:
+            shared_sums[tid] = 0.0
+        cuda.syncthreads()
+
+        if idx < n:
+            state = state_codes[idx]
+            cuda.atomic.add(shared_sums, state, float(results_row[idx]))
+
+        cuda.syncthreads()
+
+        if tid < 4:
+            block_sums[bid, tid] = shared_sums[tid]
+
+    @cuda.jit
+    def _omega_fused_batched_kernel(a_vals, b_vals, spf, P_values, n_P,
+                                     state_codes, n, block_sums):
+        """
+        FUSED kernel: factor once, count for all P, aggregate by state.
+
+        Eliminates ALL intermediate storage by aggregating directly.
+
+        block_sums shape: (n_blocks, n_P+1, 4, 2)
+        - n_P+1: one row per P threshold + one for full omega
+        - 4: states (PP=0, PC=1, CP=2, CC=3)
+        - 2: a values (0) and b values (1)
+        """
+        # Shared memory for this block's partial sums
+        # Layout: [p_idx][state][ab] where ab=0 for a, ab=1 for b
+        # Size: (n_P+1) * 4 * 2 = up to 64 doubles for 7 P values
+        shared_sums = cuda.shared.array((8, 4, 2), dtype=numba.float64)
+
+        tid = cuda.threadIdx.x
+        bid = cuda.blockIdx.x
+        idx = cuda.grid(1)
+
+        # Initialize shared memory (first 64 threads)
+        init_idx = tid
+        while init_idx < (n_P + 1) * 4 * 2:
+            p_idx = init_idx // 8
+            state = (init_idx // 2) % 4
+            ab = init_idx % 2
+            if p_idx <= n_P:
+                shared_sums[p_idx, state, ab] = 0.0
+            init_idx += cuda.blockDim.x
+        cuda.syncthreads()
+
+        if idx < n:
+            state = state_codes[idx]
+
+            # ===== Process a value =====
+            val_a = a_vals[idx]
+            if val_a <= 1:
+                # All counts are 0, nothing to add
+                pass
+            else:
+                # Factor and collect distinct primes
+                factors = cuda.local.array(20, dtype=numba.int64)
+                n_factors = 0
+                prev = 0
+                temp_n = val_a
+
+                while temp_n > 1:
+                    p = spf[temp_n]
+                    if p == 0:
+                        p = temp_n
+                    if p != prev and n_factors < 20:
+                        factors[n_factors] = p
+                        n_factors += 1
+                    prev = p
+                    temp_n //= p
+
+                # Count for each P threshold and aggregate
+                for p_idx in range(n_P):
+                    P = P_values[p_idx]
+                    count = 0
+                    for i in range(n_factors):
+                        if factors[i] <= P:
+                            count += 1
+                    cuda.atomic.add(shared_sums, (p_idx, state, 0), float(count))
+
+                # Full omega (last row)
+                cuda.atomic.add(shared_sums, (n_P, state, 0), float(n_factors))
+
+            # ===== Process b value =====
+            val_b = b_vals[idx]
+            if val_b <= 1:
+                pass
+            else:
+                factors = cuda.local.array(20, dtype=numba.int64)
+                n_factors = 0
+                prev = 0
+                temp_n = val_b
+
+                while temp_n > 1:
+                    p = spf[temp_n]
+                    if p == 0:
+                        p = temp_n
+                    if p != prev and n_factors < 20:
+                        factors[n_factors] = p
+                        n_factors += 1
+                    prev = p
+                    temp_n //= p
+
+                for p_idx in range(n_P):
+                    P = P_values[p_idx]
+                    count = 0
+                    for i in range(n_factors):
+                        if factors[i] <= P:
+                            count += 1
+                    cuda.atomic.add(shared_sums, (p_idx, state, 1), float(count))
+
+                cuda.atomic.add(shared_sums, (n_P, state, 1), float(n_factors))
+
+        cuda.syncthreads()
+
+        # Write block results to global memory
+        write_idx = tid
+        while write_idx < (n_P + 1) * 4 * 2:
+            p_idx = write_idx // 8
+            state = (write_idx // 2) % 4
+            ab = write_idx % 2
+            if p_idx <= n_P:
+                block_sums[bid, p_idx, state, ab] = shared_sums[p_idx, state, ab]
+            write_idx += cuda.blockDim.x
+
+    @cuda.jit
+    def _reduce_fused_block_sums_kernel(block_sums, n_blocks, n_P, final_sums):
+        """
+        Reduce block sums to final sums.
+
+        block_sums shape: (n_blocks, n_P+1, 4, 2)
+        final_sums shape: (n_P+1, 4, 2)
+        """
+        # Each thread handles one (p_idx, state, ab) combination
+        flat_idx = cuda.grid(1)
+        max_idx = (n_P + 1) * 4 * 2
+
+        if flat_idx >= max_idx:
+            return
+
+        p_idx = flat_idx // 8
+        state = (flat_idx // 2) % 4
+        ab = flat_idx % 2
+
+        total = 0.0
+        for i in range(n_blocks):
+            total += block_sums[i, p_idx, state, ab]
+
+        final_sums[p_idx, state, ab] = total
+
     class GPUContext:
         """
         Manages GPU memory for efficient batch processing.
@@ -504,6 +666,166 @@ if HAS_GPU:
             cuda.synchronize()
 
             return self.d_final_sums_a.copy_to_host(), self.d_final_sums_b.copy_to_host()
+
+        def compute_all_omega_batched(self, P_grid: list, d_state_codes):
+            """
+            BATCHED computation: factor ONCE, count for ALL P values.
+
+            This is ~7x faster than calling compute_omega_leq_P_aggregated in a loop
+            because we only traverse the factorization tree once per number.
+
+            Returns:
+                dict mapping P -> (sums_a, sums_b) where each is array of 4 state sums
+                Also includes 'full' key for full omega (no P limit)
+            """
+            import time
+            n_P = len(P_grid)
+
+            # Allocate results matrices: (n_P + 1, n) - last row is full omega
+            # For K=1e8: 8 * 100M * 4 bytes = 3.2GB per matrix
+            print(f"    Allocating batched results ({(n_P + 1) * self.n * 4 / 1e9:.1f}GB per array)...", end=" ", flush=True)
+            d_results_a = cuda.device_array((n_P + 1, self.n), dtype=np.int32)
+            d_results_b = cuda.device_array((n_P + 1, self.n), dtype=np.int32)
+
+            # P values array on device
+            d_P_values = cuda.to_device(np.array(P_grid, dtype=np.int64))
+            cuda.synchronize()
+            print("done")
+
+            # Run batched kernels - factor once, count for all P
+            print(f"    Running batched factorization (1 pass instead of {n_P})...", end=" ", flush=True)
+            t0 = time.time()
+            _omega_batched_kernel[self.blocks, self.threads_per_block](
+                self.d_a, self.d_spf, d_P_values, n_P, d_results_a
+            )
+            _omega_batched_kernel[self.blocks, self.threads_per_block](
+                self.d_b, self.d_spf, d_P_values, n_P, d_results_b
+            )
+            cuda.synchronize()
+            print(f"{time.time() - t0:.1f}s")
+
+            # Allocate aggregation buffers (reuse for all P)
+            if not hasattr(self, 'd_block_sums_a'):
+                self.d_block_sums_a = cuda.device_array((self.blocks, 4), dtype=np.float64)
+                self.d_block_sums_b = cuda.device_array((self.blocks, 4), dtype=np.float64)
+                self.d_final_sums_a = cuda.device_array(4, dtype=np.float64)
+                self.d_final_sums_b = cuda.device_array(4, dtype=np.float64)
+
+            # Aggregate each P's results by state
+            results = {}
+            print(f"    Aggregating by state for {n_P} P values...", end=" ", flush=True)
+            t0 = time.time()
+
+            for p_idx, P in enumerate(P_grid):
+                # Aggregate row p_idx for a values
+                _aggregate_batched_row_kernel[self.blocks, self.threads_per_block](
+                    d_results_a[p_idx], d_state_codes, self.n, self.d_block_sums_a
+                )
+                _reduce_block_sums_kernel[1, 4](
+                    self.d_block_sums_a, self.blocks, self.d_final_sums_a
+                )
+
+                # Aggregate row p_idx for b values
+                _aggregate_batched_row_kernel[self.blocks, self.threads_per_block](
+                    d_results_b[p_idx], d_state_codes, self.n, self.d_block_sums_b
+                )
+                _reduce_block_sums_kernel[1, 4](
+                    self.d_block_sums_b, self.blocks, self.d_final_sums_b
+                )
+
+                cuda.synchronize()
+                results[P] = (
+                    self.d_final_sums_a.copy_to_host().copy(),
+                    self.d_final_sums_b.copy_to_host().copy()
+                )
+
+            # Also get full omega (last row)
+            _aggregate_batched_row_kernel[self.blocks, self.threads_per_block](
+                d_results_a[n_P], d_state_codes, self.n, self.d_block_sums_a
+            )
+            _reduce_block_sums_kernel[1, 4](
+                self.d_block_sums_a, self.blocks, self.d_final_sums_a
+            )
+
+            _aggregate_batched_row_kernel[self.blocks, self.threads_per_block](
+                d_results_b[n_P], d_state_codes, self.n, self.d_block_sums_b
+            )
+            _reduce_block_sums_kernel[1, 4](
+                self.d_block_sums_b, self.blocks, self.d_final_sums_b
+            )
+
+            cuda.synchronize()
+            results['full'] = (
+                self.d_final_sums_a.copy_to_host().copy(),
+                self.d_final_sums_b.copy_to_host().copy()
+            )
+
+            print(f"{time.time() - t0:.1f}s")
+
+            return results
+
+        def compute_all_omega_fused(self, P_grid: list, d_state_codes):
+            """
+            FUSED computation: factor, count, AND aggregate all in one kernel.
+
+            This eliminates ALL intermediate storage - no 6.4GB arrays!
+            Only allocates ~100MB for block-level partial sums.
+
+            Returns:
+                dict mapping P -> (sums_a, sums_b) where each is array of 4 state sums
+                Also includes 'full' key for full omega (no P limit)
+            """
+            import time
+            n_P = len(P_grid)
+
+            # Only allocate block-level sums: (n_blocks, n_P+1, 4, 2)
+            # For K=1e8: 400K blocks * 8 * 4 * 2 * 8 bytes = ~200MB (vs 6.4GB before!)
+            block_sums_size = self.blocks * (n_P + 1) * 4 * 2 * 8 / 1e6
+            print(f"    Allocating fused block sums ({block_sums_size:.1f}MB)...", end=" ", flush=True)
+
+            d_block_sums = cuda.device_array((self.blocks, n_P + 1, 4, 2), dtype=np.float64)
+            d_final_sums = cuda.device_array((n_P + 1, 4, 2), dtype=np.float64)
+            d_P_values = cuda.to_device(np.array(P_grid, dtype=np.int64))
+            cuda.synchronize()
+            print("done")
+
+            # Run single fused kernel
+            print(f"    Running FUSED kernel (factor + count + aggregate)...", end=" ", flush=True)
+            t0 = time.time()
+            _omega_fused_batched_kernel[self.blocks, self.threads_per_block](
+                self.d_a, self.d_b, self.d_spf, d_P_values, n_P,
+                d_state_codes, self.n, d_block_sums
+            )
+            cuda.synchronize()
+            kernel_time = time.time() - t0
+            print(f"{kernel_time:.2f}s")
+
+            # Reduce block sums
+            print(f"    Reducing block sums...", end=" ", flush=True)
+            t0 = time.time()
+            n_threads = (n_P + 1) * 4 * 2  # One thread per output element
+            _reduce_fused_block_sums_kernel[1, max(n_threads, 32)](
+                d_block_sums, self.blocks, n_P, d_final_sums
+            )
+            cuda.synchronize()
+            print(f"{time.time() - t0:.2f}s")
+
+            # Extract results
+            final_sums = d_final_sums.copy_to_host()
+
+            results = {}
+            for p_idx, P in enumerate(P_grid):
+                sums_a = final_sums[p_idx, :, 0].copy()
+                sums_b = final_sums[p_idx, :, 1].copy()
+                results[P] = (sums_a, sums_b)
+
+            # Full omega (last row)
+            results['full'] = (
+                final_sums[n_P, :, 0].copy(),
+                final_sums[n_P, :, 1].copy()
+            )
+
+            return results
 
     def omega_leq_P_gpu(numbers: np.ndarray, spf: np.ndarray, P: int) -> np.ndarray:
         """

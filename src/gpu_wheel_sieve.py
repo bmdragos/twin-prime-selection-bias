@@ -219,6 +219,51 @@ if HAS_GPU:
             results[idx] = 3
 
     @cuda.jit
+    def _p1_p2_wheel_kernel(K, spf_wheel, p1_out, p2_out, state_out):
+        """
+        CUDA kernel: compute p1, p2, and state codes on-the-fly.
+
+        p1 = min(spf(a), spf(b)) for CC pairs
+        p2 = max(spf(a), spf(b)) for CC pairs
+        For PC/CP: p1 = SPF(composite), p2 = 0 (censored)
+        For PP: p1 = 0, p2 = 0
+        """
+        k = cuda.grid(1) + 1
+        if k > K:
+            return
+
+        a = 6 * k - 1
+        b = 6 * k + 1
+        idx = k - 1
+
+        spf_a = wheel_spf_lookup_device(a, spf_wheel)
+        spf_b = wheel_spf_lookup_device(b, spf_wheel)
+
+        a_prime = (spf_a == a)
+        b_prime = (spf_b == b)
+
+        if a_prime and b_prime:
+            state_out[idx] = 0
+            p1_out[idx] = 0
+            p2_out[idx] = 0
+        elif a_prime:
+            state_out[idx] = 1
+            p1_out[idx] = spf_b
+            p2_out[idx] = 0
+        elif b_prime:
+            state_out[idx] = 2
+            p1_out[idx] = spf_a
+            p2_out[idx] = 0
+        else:
+            state_out[idx] = 3
+            if spf_a <= spf_b:
+                p1_out[idx] = spf_a
+                p2_out[idx] = spf_b
+            else:
+                p1_out[idx] = spf_b
+                p2_out[idx] = spf_a
+
+    @cuda.jit
     def _aggregate_by_state_kernel(omega, state_codes, n, block_sums):
         """
         Two-phase reduction: each block computes partial sums per state.
@@ -311,6 +356,19 @@ if HAS_GPU:
             cuda.synchronize()
 
             return d_states.copy_to_host()
+
+        def compute_p1_p2(self):
+            """Compute p1, p2, and state codes for all pairs."""
+            d_p1 = cuda.device_array(self.K, dtype=np.uint32)
+            d_p2 = cuda.device_array(self.K, dtype=np.uint32)
+            d_states = cuda.device_array(self.K, dtype=np.uint8)
+
+            _p1_p2_wheel_kernel[self.blocks, self.threads_per_block](
+                self.K, self.d_spf_wheel, d_p1, d_p2, d_states
+            )
+            cuda.synchronize()
+
+            return d_p1.copy_to_host(), d_p2.copy_to_host(), d_states.copy_to_host()
 
         def compute_states_gpu(self):
             """Compute pair states, keep on GPU."""

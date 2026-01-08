@@ -13,12 +13,17 @@ ssh bmdragos@192.168.1.159
 ### First Time Setup
 
 ```bash
-# On DGX Spark
-cd ~/twin-prime-selection-bias/dgx-spark
-./run-container.sh     # Creates 'twinprime' container
+# 1. From Mac: sync code to DGX host
+rsync -avz --exclude='.venv' --exclude='__pycache__' --exclude='.git' \
+  /Users/bd/Math/twin-prime-selection-bias/ spark-dcf7.local:~/twin-prime-selection-bias/
 
-# Inside container
-./setup.sh             # Installs deps, tests GPU
+# 2. SSH in and create container
+ssh spark-dcf7.local
+cd ~/twin-prime-selection-bias/dgx-spark
+./run-container.sh     # Creates 'twinprime' container with volume mount
+
+# 3. Inside container: install deps
+./setup.sh
 ```
 
 ### Start Existing Container
@@ -43,52 +48,36 @@ docker rm twinprime
 
 ## Code Updates
 
-**From Mac**, use tarball approach (avoids permission issues):
+The container mounts `~/twin-prime-selection-bias` from the host. Just rsync to the host:
 
 ```bash
-# Create tarball of changed files
-cd /Users/bd/Math/twin-prime-selection-bias
-tar -czf /tmp/update.tar.gz src/gpu_factorization.py run_gpu.py
-
-# Copy to Spark host, then into container
-scp /tmp/update.tar.gz spark-dcf7.local:/tmp/
-ssh spark-dcf7.local "docker cp /tmp/update.tar.gz twinprime:/tmp/ && \
-    docker exec twinprime bash -c 'cd /workspace/twin-prime-selection-bias && tar -xzf /tmp/update.tar.gz'"
+# From Mac - sync all code changes
+rsync -avz --exclude='.venv' --exclude='__pycache__' --exclude='.git' \
+  /Users/bd/Math/twin-prime-selection-bias/ spark-dcf7.local:~/twin-prime-selection-bias/
 ```
 
-Or for full project sync:
-```bash
-cd /Users/bd/Math
-tar --exclude='.venv' --exclude='__pycache__' --exclude='.git' \
-    -czf /tmp/twinprime.tar.gz twin-prime-selection-bias
-
-scp /tmp/twinprime.tar.gz spark-dcf7.local:/tmp/
-ssh spark-dcf7.local "docker cp /tmp/twinprime.tar.gz twinprime:/workspace/ && \
-    docker exec twinprime bash -c 'cd /workspace && tar -xzf twinprime.tar.gz'"
-```
+Container sees changes immediately via volume mount. No docker cp needed.
 
 ## Running Experiments
 
 ```bash
 # SSH into container
 ssh spark-dcf7.local
+docker exec -it twinprime bash -c "cd /workspace/twin-prime-selection-bias && python run_gpu.py"
+
+# Or interactive session
 docker exec -it twinprime bash
-
-# Inside container
 cd /workspace/twin-prime-selection-bias
-
-# Run experiments
 python run_gpu.py --K 1e7 --timestamp    # K=10^7, ~60s
 python run_gpu.py --K 1e8 --timestamp    # K=10^8, ~3 min
-python run_gpu.py --K 1e9 --timestamp    # K=10^9, ~30 min (untested)
+python run_gpu.py --K 1e9 --timestamp    # K=10^9, ~190s
 ```
 
 ## Retrieving Results
 
 ```bash
-# From Mac
-ssh spark-dcf7.local "docker cp twinprime:/workspace/twin-prime-selection-bias/data/results /tmp/results"
-scp -r spark-dcf7.local:/tmp/results ./data/results-dgx
+# From Mac - results are on host via volume mount
+rsync -avz spark-dcf7.local:~/twin-prime-selection-bias/data/results/ ./data/results-dgx/
 ```
 
 ## GPU Utilization Notes
