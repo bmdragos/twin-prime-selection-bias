@@ -57,3 +57,7 @@ data/results/
 *.tar.gz
 /.lake
 proof/
+
+# macOS
+.DS_Store
+._*
